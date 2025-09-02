@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+   <meta charset="UTF-8">
+   <title>情侣小站 ❤️</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-r from-pink-200 via-pink-300 to-pink-400 min-h-screen flex flex-col items-center p-6">
+  <h1 class="text-4xl font-bold text-white mb-6">我们的情侣小站 💕</h1>
+
+  <!-- 头像区域 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6 relative">
+      <h2 class="text-xl font-semibold mb-4 text-center">我们的头像</h2>
+    <div class="relative w-full flex justify-between">
+      <!-- 左边头像 -->
+      <div class="flex flex-col items-center ml-[20%]">
+        <img id="avatar1"
+             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+             src="https://picsum.photos/id/1/200/200"
+             alt="老公头像"
+             onclick="openModal('avatarModal', 'avatar1')">
+        <p class="text-sm text-gray-500">老公 💙</p>
+      </div>
+
+      <!-- 右边头像 -->
+      <div class="flex flex-col items-center mr-[20%]">
+        <img id="avatar2"
+             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+             src="https://picsum.photos/id/2/200/200"
+             alt="老婆头像"
+             onclick="openModal('avatarModal', 'avatar2')">
+        <p class="text-sm text-gray-500">老婆 💖</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 头像修改弹出层 -->
+  <div id="avatarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+      <h3 class="text-lg font-semibold mb-4">更换头像</h3>
+      <input type="file" id="fileInput" accept="image/*" class="mb-3">
+      <div class="flex justify-between">
+        <button onclick="resetAvatar()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+        <button onclick="closeModal('avatarModal')" class="px-3 py-1 bg-pink-500 text-white rounded">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 个人信息 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+    <h2 class="text-xl font-semibold mb-4">个人信息</h2>
+    <table id="infoTable" class="w-full border-collapse border text-center">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="border p-2">项目</th>
+          <th class="border p-2">老公 💙</th>
+          <th class="border p-2">老婆 💖</th>
+        </tr>
+      </thead>
+      <tbody id="infoTableBody">
+        <!-- JS 会在加载时填充默认行或保存的数据 -->
+      </tbody>
+    </table>
+    <div class="flex gap-3 mt-4">
+      <button type="button" onclick="addInfoRow()" class="px-4 py-2 bg-green-400 text-white rounded-xl shadow">新增</button>
+      <button type="button" onclick="saveTableInfo()" class="px-4 py-2 bg-pink-400 text-white rounded-xl shadow">保存</button>
+    </div>
+  </div>
+
+  <!-- 相爱时长（修复显示问题） -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+    <h2 class="text-xl font-semibold mb-4">我们的相爱时长</h2>
+    <!-- 修复的布局：确保时间文本居中显示 -->
+    <div class="border rounded p-4 flex items-center justify-between">
+      <div class="flex-1 text-center">
+        <p id="loveDays" class="text-lg font-bold text-pink-600"></p>
+      </div>
+      <button onclick="openModal('loveDateModal')" class="ml-4 px-4 py-2 bg-blue-500 text-white rounded">修改</button>
+    </div>
+  </div>
+
+  <!-- 相爱时长修改弹出层 -->
+  <div id="loveDateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+      <h3 class="text-lg font-semibold mb-4">修改相爱起始时间</h3>
+      <input type="date" id="loveDateInModal" class="border rounded p-2 mb-3 w-full">
+      <div class="flex justify-between">
+        <button onclick="resetLoveDateInput()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+        <button onclick="saveLoveDateFromModal()" class="px-3 py-1 bg-pink-500 text-white rounded">确定</button>
+        <button onclick="closeModal('loveDateModal')" class="px-3 py-1 bg-gray-500 text-white rounded">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 生活相册（Postimages + GitHub JSON 清单） -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold">我们的相册 📸</h2>
+      <div class="flex items-center gap-2">
+        <button onclick="openAlbumSettings()" class="px-3 py-1 bg-gray-200 rounded">设置</button>
+        <button onclick="refreshGallery()" class="px-3 py-1 bg-blue-500 text-white rounded">刷新</button>
+      </div>
+    </div>
+
+    <!-- 上传（需要本地已配置 Postimages Key / Gallery 和 GitHub Token） -->
+    <div class="border rounded p-3 mb-3">
+      <p class="text-sm text-gray-600 mb-2">选择照片（将上传到 Postimages，并写入 GitHub 的 <code>gallery.json</code>）</p>
+      <input id="photoFiles" type="file" accept="image/*" multiple>
+      <div class="flex mt-2">
+        <input type="text" id="externalUrl" placeholder="或直接粘贴图片直链" class="flex-1 p-2 border rounded mr-2">
+        <button onclick="addExternalUrl()" class="px-3 py-1 bg-pink-500 text-white rounded">添加</button>
+      </div>
+      <button onclick="startUpload()" class="mt-2 px-3 py-1 bg-green-500 text-white rounded">上传所选</button>
+      <p id="uploadHint" class="text-xs text-gray-500 mt-1">提示：若未配置“设置”，上传按钮会提示你先完成配置。</p>
+    </div>
+
+    <!-- 相册网格 -->
+    <div id="gallery" class="grid grid-cols-3 gap-4 mt-4"></div>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div id="albumSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 shadow-lg relative w-full max-w-md">
+      <h3 class="text-lg font-semibold mb-4">相册同步设置</h3>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Postimages API Key</label>
+          <input id="cfgPostimagesKey" type="password" class="w-full p-2 border rounded" placeholder="以你账号获取的 Key">
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Postimages 相册ID（Gallery）</label>
+          <input id="cfgPostimagesGallery" type="text" class="w-full p-2 border rounded" placeholder="如 2Bg7L37">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">GitHub Owner</label>
+            <input id="cfgOwner" type="text" class="w-full p-2 border rounded" placeholder="yourname">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Repo</label>
+            <input id="cfgRepo" type="text" class="w-full p-2 border rounded" placeholder="yourrepo">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Branch</label>
+            <input id="cfgBranch" type="text" class="w-full p-2 border rounded" placeholder="main">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">Manifest 路径</label>
+            <input id="cfgManifestPath" type="text" class="w-full p-2 border rounded" placeholder="gallery.json">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">GitHub Token（仅本机保存）</label>
+          <input id="cfgGithubToken" type="password" class="w-full p-2 border rounded" placeholder="repo contents:rw">
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button onclick="closeAlbumSettings()" class="px-3 py-1 bg-gray-300 rounded">取消</button>
+        <button onclick="saveAlbumSettings()" class="px-3 py-1 bg-pink-500 text-white rounded">保存</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    let currentAvatarId = null;
+    // 默认头像路径
+    const defaultAvatars = {
+      avatar1: "images/qinbaotai.png",
+      avatar2: "images/yanxuran.png"
+    };
+    // 默认恋爱起始时间
+    const DEFAULT_LOVE_DATE = "2024-02-26T00:00:00+08:00";
+    // 保存原始日期值，用于取消时恢复
+    let originalLoveDate = "";
+
+    // 打开弹窗
+    function openModal(modalId, avatarId = null) {
+      if (modalId === 'avatarModal' && avatarId) {
+        currentAvatarId = avatarId;
+      }
+      if (modalId === 'loveDateModal') {
+        // 保存原始值
+        originalLoveDate = getLoveDate().substring(0, 10);
+        document.getElementById('loveDateInModal').value = originalLoveDate;
+      }
+      document.getElementById(modalId).classList.remove("hidden");
+    }
+
+    // 关闭弹窗
+    function closeModal(modalId) {
+      if (modalId === 'loveDateModal') {
+        // 恢复原始值
+        document.getElementById('loveDateInModal').value = originalLoveDate;
+      }
+      document.getElementById(modalId).classList.add("hidden");
+      if (modalId === 'avatarModal') {
+        currentAvatarId = null;
+        document.getElementById("fileInput").value = "";
+      }
+    }
+
+    // 头像上传和保存
+    document.getElementById("fileInput").addEventListener("change", function (event) {
+      if (event.target.files && event.target.files[0] && currentAvatarId) {
+        let reader = new FileReader();
+        reader.onload = function (e) {
+          document.getElementById(currentAvatarId).src = e.target.result;
+          localStorage.setItem(currentAvatarId, e.target.result);
+        };
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    });
+
+    // 恢复默认头像
+    function resetAvatar() {
+      if (currentAvatarId) {
+        localStorage.removeItem(currentAvatarId);
+        document.getElementById(currentAvatarId).src = defaultAvatars[currentAvatarId];
+      }
+      closeModal('avatarModal');
+    }
+
+    // 初始化头像
+    ['avatar1','avatar2'].forEach(id => {
+      const saved = localStorage.getItem(id);
+      if (saved) {
+        document.getElementById(id).src = saved;
+      } else {
+        document.getElementById(id).src = defaultAvatars[id];
+      }
+    });
+
+    // 个人信息表格
+    const PERSONAL_INFO_KEY = 'personalInfoTable_v1';
+    const fallbackPersonalInfo = [
+      { project: "年龄", ta: "22", me: "23" },
+      { project: "爱好", ta: "运动", me: "睡觉" },
+      { project: "游戏", ta: "王者", me: "蛋仔" }
+    ];
+
+    function createInfoRow(project = '', ta = '', me = '') {
+      const tr = document.createElement('tr');
+      const tdProj = document.createElement('td');
+      tdProj.className = 'border p-2';
+      const inpProj = document.createElement('input');
+      inpProj.type = 'text';
+      inpProj.placeholder = '项目';
+      inpProj.className = 'w-full p-1 border rounded project-input';
+      inpProj.value = project;
+      tdProj.appendChild(inpProj);
+
+      const tdTa = document.createElement('td');
+      tdTa.className = 'border p-2';
+      const inpTa = document.createElement('input');
+      inpTa.type = 'text';
+      inpTa.placeholder = '老公 💙';
+      inpTa.className = 'w-full p-1 border rounded ta-input';
+      inpTa.value = ta;
+      tdTa.appendChild(inpTa);
+
+      const tdMe = document.createElement('td');
+      tdMe.className = 'border p-2 flex items-center gap-2';
+      const inpMe = document.createElement('input');
+      inpMe.type = 'text';
+      inpMe.placeholder = '老婆 💖';
+      inpMe.className = 'w-full p-1 border rounded me-input';
+      inpMe.value = me;
+      tdMe.appendChild(inpMe);
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'ml-2 px-2 py-1 bg-red-400 text-white rounded text-sm';
+      delBtn.textContent = '删';
+      delBtn.onclick = () => { tr.remove(); };
+      tdMe.appendChild(delBtn);
+
+      tr.appendChild(tdProj);
+      tr.appendChild(tdTa);
+      tr.appendChild(tdMe);
+      return tr;
+    }
+
+    function addInfoRow() {
+      const tbody = document.getElementById('infoTableBody');
+      tbody.appendChild(createInfoRow());
+    }
+
+    function saveTableInfo() {
+      const rows = document.querySelectorAll('#infoTableBody tr');
+      const data = [];
+      rows.forEach(row => {
+        const project = row.querySelector('.project-input')?.value || '';
+        const ta = row.querySelector('.ta-input')?.value || '';
+        const me = row.querySelector('.me-input')?.value || '';
+        if (project.trim() === '' && ta.trim() === '' && me.trim() === '') return;
+        data.push({ project, ta, me });
+      });
+      localStorage.setItem(PERSONAL_INFO_KEY, JSON.stringify(data));
+      showNotification('已保存 ✅');
+    }
+
+    function loadTableInfo() {
+      const tbody = document.getElementById('infoTableBody');
+      tbody.innerHTML = '';
+      const saved = localStorage.getItem(PERSONAL_INFO_KEY);
+
+      if (saved) {
+        try {
+          const arr = JSON.parse(saved);
+          if (Array.isArray(arr) && arr.length > 0) {
+            arr.forEach(r => tbody.appendChild(createInfoRow(r.project, r.ta, r.me)));
+            return;
+          }
+        } catch (e) {
+          console.warn("解析 localStorage 失败：", e);
+        }
+      }
+
+      const defaultInfo = (window.defaultPersonalInfo && Array.isArray(window.defaultPersonalInfo))
+        ? window.defaultPersonalInfo
+        : fallbackPersonalInfo;
+
+      defaultInfo.forEach(r => tbody.appendChild(createInfoRow(r.project, r.ta, r.me)));
+    }
+
+    // 相爱时长功能（修复显示问题）
+    function getLoveDate() {
+      return localStorage.getItem("loveDate") || DEFAULT_LOVE_DATE;
+    }
+
+    function saveLoveDateFromModal() {
+      const inputDate = document.getElementById('loveDateInModal').value;
+      if (inputDate) {
+        const finalDate = `${inputDate}T00:00:00+08:00`;
+        localStorage.setItem("loveDate", finalDate);
+        calcLoveTime();
+        closeModal('loveDateModal');
+        showNotification('时间已更新 ❤️');
+      }
+    }
+
+    // 重置输入框为默认日期，但不保存
+    function resetLoveDateInput() {
+      document.getElementById('loveDateInModal').value = DEFAULT_LOVE_DATE.substring(0, 10);
+    }
+
+    // 核心修复：确保时间计算并正确显示
+    function calcLoveTime() {
+      const start = new Date(getLoveDate());
+      const now = new Date();
+      let diff = Math.floor((now - start) / 1000);
+      if (diff < 0) diff = 0;
+
+      const years = Math.floor(diff / (365 * 24 * 3600));
+      diff %= (365 * 24 * 3600);
+      const months = Math.floor(diff / (30 * 24 * 3600));
+      diff %= (30 * 24 * 3600);
+      const days = Math.floor(diff / (24 * 3600));
+      diff %= (24 * 3600);
+      const hours = Math.floor(diff / 3600);
+      diff %= 3600;
+      const minutes = Math.floor(diff / 60);
+      const seconds = diff % 60;
+
+      // 确保时间文本被正确设置到DOM
+      const loveDaysElement = document.getElementById("loveDays");
+      if (loveDaysElement) {
+        loveDaysElement.innerText =
+          `我们已经在一起 ${years}年 ${months}月 ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒 ❤️`;
+      }
+    }
+    // 显示通知
+    function showNotification(message) {
+      const notice = document.createElement('div');
+      notice.textContent = message;
+      notice.className = 'fixed right-6 bottom-6 bg-black text-white px-3 py-2 rounded shadow z-50';
+      document.body.appendChild(notice);
+      setTimeout(() => notice.remove(), 1500);
+    }
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTableInfo();
+      renderGallery();
+
+      // 初始化并启动计时器更新恋爱时长
+      const startDate = getLoveDate();
+      calcLoveTime(); // 立即计算一次
+      setInterval(calcLoveTime, 1000); // 每秒更新一次
+    });
+
+    // ====== 相册同步：配置 & 工具 ======
+    const K = {
+      PI_KEY: 'PI_KEY',
+      PI_GALLERY: 'PI_GALLERY',
+      GH_OWNER: 'GH_OWNER',
+      GH_REPO: 'GH_REPO',
+      GH_BRANCH: 'GH_BRANCH',
+      GH_MANIFEST: 'GH_MANIFEST',
+      GH_TOKEN: 'GH_TOKEN'
+    };
+
+    function getCfg(k, d=''){ return localStorage.getItem(k) || d; }
+    function setCfg(k, v){ localStorage.setItem(k, v); }
+
+    function openAlbumSettings(){
+      document.getElementById('cfgPostimagesKey').value = getCfg(K.PI_KEY);
+      document.getElementById('cfgPostimagesGallery').value = getCfg(K.PI_GALLERY);
+      document.getElementById('cfgOwner').value = getCfg(K.GH_OWNER);
+      document.getElementById('cfgRepo').value = getCfg(K.GH_REPO);
+      document.getElementById('cfgBranch').value = getCfg(K.GH_BRANCH, 'main');
+      document.getElementById('cfgManifestPath').value = getCfg(K.GH_MANIFEST, 'gallery.json');
+      document.getElementById('cfgGithubToken').value = getCfg(K.GH_TOKEN);
+      document.getElementById('albumSettingsModal').classList.remove('hidden');
+    }
+    function closeAlbumSettings(){
+      document.getElementById('albumSettingsModal').classList.add('hidden');
+    }
+    function saveAlbumSettings(){
+      setCfg(K.PI_KEY, document.getElementById('cfgPostimagesKey').value.trim());
+      setCfg(K.PI_GALLERY, document.getElementById('cfgPostimagesGallery').value.trim());
+      setCfg(K.GH_OWNER, document.getElementById('cfgOwner').value.trim());
+      setCfg(K.GH_REPO, document.getElementById('cfgRepo').value.trim());
+      setCfg(K.GH_BRANCH, document.getElementById('cfgBranch').value.trim());
+      setCfg(K.GH_MANIFEST, document.getElementById('cfgManifestPath').value.trim() || 'gallery.json');
+      setCfg(K.GH_TOKEN, document.getElementById('cfgGithubToken').value.trim());
+      closeAlbumSettings();
+      showNotification('设置已保存 ✅');
+    }
+
+    // ====== 相册：读取与渲染 ======
+    async function fetchManifestRaw(){
+      const owner = getCfg(K.GH_OWNER), repo = getCfg(K.GH_REPO);
+      const branch = getCfg(K.GH_BRANCH, 'main'), path = getCfg(K.GH_MANIFEST, 'gallery.json');
+      if(!owner || !repo) throw new Error('未配置 GitHub owner/repo');
+      const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+      const res = await fetch(rawUrl, { cache: 'no-store' });
+      if(!res.ok) throw new Error('读取 gallery.json 失败');
+      return await res.json();
+    }
+    async function refreshGallery(){
+      try{
+        const data = await fetchManifestRaw();
+        renderGalleryFromManifest(data);
+        showNotification('已刷新 📥');
+      }catch(e){ console.error(e); showNotification('刷新失败 ❌'); }
+    }
+    function renderGalleryFromManifest(list){
+      const container = document.getElementById('gallery');
+      container.innerHTML = '';
+      (list || []).slice().reverse().forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = "relative";
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.className = "w-full h-32 object-cover rounded-xl";
+        img.alt = (item.alt || `相册照片 ${idx+1}`);
+        const meta = document.createElement('div');
+        meta.className = "absolute left-2 bottom-2 text-[10px] bg-black/50 text-white px-1 rounded";
+        meta.textContent = item.who ? item.who : '';
+        div.appendChild(img);
+        div.appendChild(meta);
+        container.appendChild(div);
+      });
+    }
+
+    // ====== 相册：上传到 Postimages（非官方接口） ======
+    async function fileToBase64(file){
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(',')[1]); // 去掉 data: 前缀
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    async function uploadToPostimages({base64, fileName}){
+      const key = getCfg(K.PI_KEY), gallery = getCfg(K.PI_GALLERY);
+      if(!key || !gallery) throw new Error('请在“设置”里填写 Postimages Key 和 Gallery');
+      // 参考社区方案：api.postimage.org/1/upload，x-www-form-urlencoded 携带 key/gallery/image 等参数
+      // 注意：该接口为反向摸索，可能随时间变更。:contentReference[oaicite:1]{index=1}
+      const form = new URLSearchParams();
+      form.set('key', key);
+      form.set('gallery', gallery);
+      form.set('o', '2b819584285c102318568238c7d4a4c7');
+      form.set('m', '59c2ad4b46b0c1e12d5703302bff0120');
+      form.set('version', '1.0.1');
+      form.set('portable', '1');
+      const dot = fileName.lastIndexOf('.');
+      form.set('name', dot>0 ? fileName.slice(0,dot) : fileName);
+      form.set('type', dot>0 ? fileName.slice(dot+1) : 'jpg');
+      form.set('image', base64);
+
+      const res = await fetch('https://api.postimage.org/1/upload', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+        body: form.toString()
+      });
+      if(!res.ok) throw new Error('Postimages 上传失败');
+      const data = await res.json().catch(()=> ({}));
+      // 常见返回包含 .url（直链/页面链），不同实现略有差异
+      const url = data?.url || data?.image?.url || data?.link || '';
+      if(!url) throw new Error('未获取到图片地址');
+      return url;
+    }
+
+    // ====== 相册：把图片写入 GitHub 的 gallery.json ======
+    async function readManifestViaAPI(){
+      const owner = getCfg(K.GH_OWNER), repo = getCfg(K.GH_REPO);
+      const path = getCfg(K.GH_MANIFEST, 'gallery.json');
+      const branch = getCfg(K.GH_BRANCH, 'main');
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`, {
+        headers: {'Accept':'application/vnd.github+json'}
+      });
+      if(!res.ok) throw new Error('读取 manifest（API）失败');
+      const j = await res.json();
+      const content = atob(j.content || '');
+      return { list: JSON.parse(content || '[]'), sha: j.sha };
+    }
+    async function writeManifestViaAPI({list, sha, message}){
+      const owner = getCfg(K.GH_OWNER), repo = getCfg(K.GH_REPO);
+      const path = getCfg(K.GH_MANIFEST, 'gallery.json');
+      const branch = getCfg(K.GH_BRANCH, 'main');
+      const token = getCfg(K.GH_TOKEN);
+      if(!token) throw new Error('未配置 GitHub Token（仅本机保存）');
+
+      const body = {
+        message: message || 'chore(gallery): update',
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(list, null, 2)))),
+        sha, branch
+      };
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`, {
+        method: 'PUT',
+        headers: {
+          'Accept':'application/vnd.github+json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+      if(!res.ok) {
+        const t = await res.text();
+        throw new Error('写入 manifest 失败：' + t);
+      }
+    }
+
+    // ====== 交互：选择文件上传 / 添加外链 ======
+    async function startUpload(){
+      const files = Array.from(document.getElementById('photoFiles').files || []);
+      const who = '我们'; // 你可以改成从登录名/表单读取
+      if(files.length === 0){ showNotification('请先选择文件或使用“添加”粘贴直链'); return; }
+
+      try{
+        // 读取当前清单（拿到 sha 做并发保护）
+        const { list, sha } = await readManifestViaAPI();
+        for(const f of files){
+          const base64 = await fileToBase64(f);
+          const url = await uploadToPostimages({base64, fileName: f.name});
+          list.push({ src: url, who, ts: Date.now() });
+        }
+        await writeManifestViaAPI({ list, sha, message: `add ${files.length} photo(s)` });
+        showNotification('上传成功 ✅');
+        await refreshGallery();
+        document.getElementById('photoFiles').value = '';
+      }catch(e){
+        console.error(e);
+        showNotification('上传失败 ❌：' + e.message);
+      }
+    }
+    async function addExternalUrl(){
+      const u = document.getElementById('externalUrl').value.trim();
+      if(!u) return;
+      try{
+        const { list, sha } = await readManifestViaAPI();
+        list.push({ src: u, who: '外链', ts: Date.now() });
+        await writeManifestViaAPI({ list, sha, message: 'add external url' });
+        document.getElementById('externalUrl').value = '';
+        await refreshGallery();
+        showNotification('已添加外链 ✅');
+      }catch(e){ console.error(e); showNotification('添加失败 ❌'); }
+    }
+
+    // 页面加载时拉取一次
+    document.addEventListener('DOMContentLoaded', () => {
+      refreshGallery(); // 浏览者只读即可；上传者先去“设置”里填好信息
+    });
+  </script>
+</body>
+</html>
