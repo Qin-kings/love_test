@@ -1,0 +1,48 @@
+name: Add Photo
+
+on:
+  workflow_dispatch:
+    inputs:
+      fileName:
+        description: "图片文件名"
+        required: true
+      content:
+        description: "Base64 图片内容"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  add-photo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Decode and Save Image
+        run: |
+          mkdir -p gallery
+          echo "${{ github.event.inputs.content }}" | base64 -d > "gallery/${{ github.event.inputs.fileName }}"
+
+      - name: Update gallery.json
+        run: |
+          FILE="gallery/${{ github.event.inputs.fileName }}"
+          URL="https://raw.githubusercontent.com/${{ github.repository }}/main/$FILE"
+          if [ ! -f gallery.json ]; then
+            echo "[]" > gallery.json
+          fi
+          node -e "
+          const fs=require('fs');
+          const list=JSON.parse(fs.readFileSync('gallery.json','utf8'));
+          list.push({src:'$URL',name:'${{ github.event.inputs.fileName }}'});
+          fs.writeFileSync('gallery.json',JSON.stringify(list,null,2));
+          "
+
+      - name: Commit changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add gallery.json "gallery/${{ github.event.inputs.fileName }}"
+          git commit -m "Add new photo ${{ github.event.inputs.fileName }}"
+          git push
