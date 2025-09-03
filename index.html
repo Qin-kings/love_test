@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>情侣相册</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 生产环境应使用本地构建的Tailwind -->
+  <link href="tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-pink-100 min-h-screen flex flex-col items-center p-6">
 
@@ -13,31 +14,54 @@
   <input type="file" id="photoFiles" class="mb-4" multiple>
   <button onclick="startUpload()" class="px-4 py-2 bg-pink-400 text-white rounded-lg">上传</button>
 
+  <!-- Token输入区（首次使用） -->
+  <div id="tokenInput" class="mt-4 p-4 bg-white rounded-lg shadow hidden">
+    <p class="text-sm mb-2">请输入GitHub访问令牌：</p>
+    <input type="password" id="tokenField" class="border p-2 rounded w-full">
+    <button onclick="saveToken()" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded">保存</button>
+  </div>
+
   <!-- 相册展示 -->
   <div id="gallery" class="grid grid-cols-2 gap-4 w-full mt-6"></div>
 
   <script>
-    const GH_OWNER = "Qin-kings";   // GitHub 用户名
-    const GH_REPO  = "love_test";   // 仓库名
-    const GH_TOKEN = "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"; // ⚠️ 真实 Token，需有 repo + workflow 权限
+    const GH_OWNER = "Qin-kings";
+    const GH_REPO  = "love_test";
+    let GH_TOKEN = localStorage.getItem('gh_token');
+
+    // 检查Token是否存在
+    if (!GH_TOKEN) {
+      document.getElementById('tokenInput').classList.remove('hidden');
+    }
+
+    function saveToken() {
+      GH_TOKEN = document.getElementById('tokenField').value;
+      localStorage.setItem('gh_token', GH_TOKEN);
+      document.getElementById('tokenInput').classList.add('hidden');
+      alert('Token已保存!');
+    }
 
     // 渲染相册
     async function refreshGallery() {
       const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/gallery.json`;
-      const res = await fetch(url, {cache: "no-store"});
-      if(!res.ok) return;
-      const list = await res.json();
-      const container = document.getElementById("gallery");
-      container.innerHTML = "";
-      list.slice().reverse().forEach(item => {
-        const img = document.createElement("img");
-        img.src = item.src;
-        img.className = "w-full h-40 object-cover rounded-lg shadow";
-        container.appendChild(img);
-      });
+      try {
+        const res = await fetch(url, {cache: "no-store"});
+        if(!res.ok) throw new Error('无法加载相册');
+        const list = await res.json();
+        const container = document.getElementById("gallery");
+        container.innerHTML = "";
+        list.slice().reverse().forEach(item => {
+          const img = document.createElement("img");
+          img.src = item.src;
+          img.className = "w-full h-40 object-cover rounded-lg shadow";
+          container.appendChild(img);
+        });
+      } catch (error) {
+        console.error("加载相册失败:", error);
+      }
     }
 
-    // 文件转 base64
+    // 文件转base64
     function fileToBase64(file){
       return new Promise((resolve, reject)=>{
         const r = new FileReader();
@@ -49,37 +73,56 @@
 
     // 上传入口
     async function startUpload(){
+      if (!GH_TOKEN) {
+        document.getElementById('tokenInput').classList.remove('hidden');
+        return alert("请先输入GitHub Token");
+      }
+
       const files = document.getElementById("photoFiles").files;
       if(files.length === 0) return alert("请选择文件");
 
       for(const f of files){
-        const base64 = await fileToBase64(f);
+        try {
+          const base64 = await fileToBase64(f);
 
-        // 调用 GitHub Actions workflow
-        const res = await fetch(
-          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
-          {
-            method: "POST",
-            headers: {
-              "Accept": "application/vnd.github+json",
-              "Authorization": `Bearer ${GH_TOKEN}`
-            },
-            body: JSON.stringify({
-              ref: "main",
-              inputs: { base64 }
-            })
+          // 调用GitHub API
+          const res = await fetch(
+            `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
+            {
+              method: "POST",
+              headers: {
+                "Accept": "application/vnd.github+json",
+                "Authorization": `Bearer ${GH_TOKEN}`
+              },
+              body: JSON.stringify({
+                ref: "main",
+                inputs: { 
+                  base64,
+                  filename: f.name
+                }
+              })
+            }
+          );
+
+          if(res.ok){
+            alert(`上传成功 ✅：${f.name}，请稍等相册刷新`);
+          } else {
+            const msg = await res.text();
+            // Token可能失效，清除它
+            if(res.status === 401) {
+              localStorage.removeItem('gh_token');
+              GH_TOKEN = null;
+              document.getElementById('tokenInput').classList.remove('hidden');
+            }
+            alert(`上传失败 ❌：${msg}`);
           }
-        );
-
-        if(res.ok){
-          alert(`上传成功 ✅：${f.name}，请稍等相册刷新`);
-        } else {
-          const msg = await res.text();
-          alert(`上传失败 ❌：${msg}`);
+        } catch (error) {
+          console.error("上传错误:", error);
+          alert(`上传出错: ${error.message}`);
         }
       }
 
-      setTimeout(refreshGallery, 5000); // 等待 workflow 更新 JSON 后刷新
+      setTimeout(refreshGallery, 5000);
     }
 
     document.addEventListener("DOMContentLoaded", refreshGallery);
