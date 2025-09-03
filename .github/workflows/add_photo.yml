@@ -9,7 +9,11 @@ on:
       content:
         description: "Base64 图片内容"
         required: true
-
+        
+permissions:
+    contents: write
+    actions: write
+    
 jobs:
   add-photo:
     runs-on: ubuntu-latest
