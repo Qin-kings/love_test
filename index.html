@@ -10,29 +10,26 @@
   <h1 class="text-2xl font-bold mb-4">情侣相册 💖</h1>
 
   <!-- 上传区 -->
-  <input type="file" id="photoFiles" class="mb-4">
+  <input type="file" id="photoFiles" class="mb-4" multiple>
   <button onclick="startUpload()" class="px-4 py-2 bg-pink-400 text-white rounded-lg">上传</button>
 
   <!-- 相册展示 -->
   <div id="gallery" class="grid grid-cols-2 gap-4 w-full mt-6"></div>
 
   <script>
-    const GH_OWNER   = "Qin-kings";   // 修改为你的 GitHub 用户名
-    const GH_REPO    = "love_test";       // 修改为你的仓库名
-    const GH_BRANCH  = "main";        // 修改为你的分支
-    const GH_PATH    = "gallery.json";
+    const GH_OWNER = "Qin-kings";   // GitHub 用户名
+    const GH_REPO  = "love_test";    // 仓库名
+    const GH_TOKEN = "4f46b6c64682df2c534b71582906ddc5"; // ⚠️ 仅用于触发workflow，安全控制
 
-    // ⚠️ 仅自己用：存放 GitHub Token（访问仓库权限，别泄露）
-    const GH_TOKEN   = "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";
-
-    // ⚠️ Postimages 配置
-    const PI_KEY     = "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";
+    // Postimages 配置
+    const PI_KEY     = "4f46b6c64682df2c534b71582906ddc5";
     const PI_GALLERY = "4pmmnyX";
 
     // 渲染相册
     async function refreshGallery() {
-      const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/${GH_BRANCH}/${GH_PATH}`;
+      const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/gallery.json`;
       const res = await fetch(url, {cache: "no-store"});
+      if(!res.ok) return;
       const list = await res.json();
       const container = document.getElementById("gallery");
       container.innerHTML = "";
@@ -60,10 +57,10 @@
       form.set("key", PI_KEY);
       form.set("gallery", PI_GALLERY);
       form.set("name", fileName);
-      form.set("type", fileName.split(".").pop());
+      form.set("type", "base64");
       form.set("image", base64);
 
-      const res = await fetch("https://api.postimage.org/1/upload", {
+      const res = await fetch("https://api.postimages.org/1/upload", {
         method: "POST",
         headers: {"Content-Type": "application/x-www-form-urlencoded"},
         body: form.toString()
@@ -72,56 +69,37 @@
       return data.url || data.image?.url || "";
     }
 
-    // 读 manifest（GitHub API）
-    async function readManifestViaAPI(){
-      const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}?ref=${GH_BRANCH}`, {
-        headers: {"Accept": "application/vnd.github+json"}
-      });
-      const j = await res.json();
-      const content = atob(j.content);
-      return {list: JSON.parse(content), sha: j.sha};
-    }
-
-    // 写 manifest（GitHub API）
-    async function writeManifestViaAPI({list, sha, message}){
-      const body = {
-        message: message,
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(list, null, 2)))),
-        sha, branch: GH_BRANCH
-      };
-      const res = await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`, {
-        method: "PUT",
-        headers: {
-          "Accept": "application/vnd.github+json",
-          "Authorization": `Bearer ${GH_TOKEN}`
-        },
-        body: JSON.stringify(body)
-      });
-      if(!res.ok) throw new Error(await res.text());
-    }
-
     // 上传入口
     async function startUpload(){
       const files = document.getElementById("photoFiles").files;
       if(files.length === 0) return alert("请选择文件");
 
-      const {list, sha} = await readManifestViaAPI();
       for(const f of files){
         const base64 = await fileToBase64(f);
         const url = await uploadToPostimages({base64, fileName: f.name});
-        list.push({src: url, who:"我们", ts: Date.now()});
+        
+        // 调用 GitHub Actions workflow
+        await fetch(
+          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
+          {
+            method: "POST",
+            headers: {
+              "Accept": "application/vnd.github+json",
+              "Authorization": `Bearer ${GH_TOKEN}`
+            },
+            body: JSON.stringify({
+              ref: "main",
+              inputs: { url }
+            })
+          }
+        );
       }
-      await writeManifestViaAPI({list, sha, message: "add photo"});
-      alert("上传成功 ✅");
-      refreshGallery();
+
+      alert("上传成功 ✅，请稍等 Actions 更新 gallery.json");
+      setTimeout(refreshGallery, 3000); // 延迟刷新
     }
 
     document.addEventListener("DOMContentLoaded", refreshGallery);
   </script>
 </body>
 </html>
-
-
-
-
-
