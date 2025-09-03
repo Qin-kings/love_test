@@ -19,6 +19,7 @@
   <script>
     const GH_OWNER = "Qin-kings";   // GitHub 用户名
     const GH_REPO  = "love_test";   // 仓库名
+    const GH_TOKEN = "4f46b6c64682df2c534b71582906ddc5"; // ⚠️ 真实 Token，需有 repo + workflow 权限
 
     // 渲染相册
     async function refreshGallery() {
@@ -46,7 +47,7 @@
       });
     }
 
-    // 上传入口（这里只生成 base64，不直接上传）
+    // 上传入口
     async function startUpload(){
       const files = document.getElementById("photoFiles").files;
       if(files.length === 0) return alert("请选择文件");
@@ -54,21 +55,37 @@
       for(const f of files){
         const base64 = await fileToBase64(f);
 
-        // 弹出提示，给用户复制
-        prompt(
-          "✅ 已生成 base64，请复制到 GitHub Actions 的 'url' 或 'base64' 输入框：",
-          base64
+        // 调用 GitHub Actions workflow
+        const res = await fetch(
+          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
+          {
+            method: "POST",
+            headers: {
+              "Accept": "application/vnd.github+json",
+              "Authorization": `Bearer ${GH_TOKEN}`
+            },
+            body: JSON.stringify({
+              ref: "main",
+              inputs: { base64 }
+            })
+          }
         );
+
+        if(res.ok){
+          alert(`上传成功 ✅：${f.name}，请稍等相册刷新`);
+        } else {
+          const msg = await res.text();
+          alert(`上传失败 ❌：${msg}`);
+        }
       }
+
+      setTimeout(refreshGallery, 5000); // 等待 workflow 更新 JSON 后刷新
     }
 
     document.addEventListener("DOMContentLoaded", refreshGallery);
   </script>
 </body>
 </html>
-
-
-
 
 
 
