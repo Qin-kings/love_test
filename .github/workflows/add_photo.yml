@@ -1,0 +1,40 @@
+name: Add Photo
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: '图片 URL'
+        required: true
+
+jobs:
+  update-gallery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Read gallery.json
+        id: read
+        run: |
+          if [ ! -f gallery.json ]; then
+            echo "[]" > gallery.json
+          fi
+          GALLERY=$(cat gallery.json)
+          echo "GALLERY=$GALLERY" >> $GITHUB_ENV
+
+      - name: Append new photo
+        run: |
+          echo $GALLERY | jq --arg url "${{ github.event.inputs.url }}" \
+            '. += [{"src": $url, "who": "我们", "ts": '"$(date +%s)"'}]' > gallery.json
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add gallery.json
+          git commit -m "Add photo from workflow"
+          git push
