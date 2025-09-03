@@ -18,12 +18,8 @@
 
   <script>
     const GH_OWNER = "Qin-kings";   // GitHub 用户名
-    const GH_REPO  = "love_test";    // 仓库名
-    const GH_TOKEN = "4f46b6c64682df2c534b71582906ddc5"; // ⚠️ 仅用于触发workflow，安全控制
-
-    // Postimages 配置
-    const PI_KEY     = "4f46b6c64682df2c534b71582906ddc5";
-    const PI_GALLERY = "4pmmnyX";
+    const GH_REPO  = "love_test";   // 仓库名
+    const GH_TOKEN = "你的 GitHub Token"; // ⚠️ 仅用于触发 workflow，推荐只给 workflow 权限
 
     // 渲染相册
     async function refreshGallery() {
@@ -51,24 +47,6 @@
       });
     }
 
-    // 上传到 Postimages
-    async function uploadToPostimages({base64, fileName}){
-      const form = new URLSearchParams();
-      form.set("key", PI_KEY);
-      form.set("gallery", PI_GALLERY);
-      form.set("name", fileName);
-      form.set("type", "base64");
-      form.set("image", base64);
-
-      const res = await fetch("https://api.postimages.org/1/upload", {
-        method: "POST",
-        headers: {"Content-Type": "application/x-www-form-urlencoded"},
-        body: form.toString()
-      });
-      const data = await res.json();
-      return data.url || data.image?.url || "";
-    }
-
     // 上传入口
     async function startUpload(){
       const files = document.getElementById("photoFiles").files;
@@ -76,9 +54,8 @@
 
       for(const f of files){
         const base64 = await fileToBase64(f);
-        const url = await uploadToPostimages({base64, fileName: f.name});
-        
-        // 调用 GitHub Actions workflow
+
+        // 触发 GitHub Actions workflow
         await fetch(
           `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
           {
@@ -89,17 +66,21 @@
             },
             body: JSON.stringify({
               ref: "main",
-              inputs: { url }
+              inputs: { 
+                fileName: f.name,
+                content: base64
+              }
             })
           }
         );
       }
 
       alert("上传成功 ✅，请稍等 Actions 更新 gallery.json");
-      setTimeout(refreshGallery, 3000); // 延迟刷新
+      setTimeout(refreshGallery, 5000); // 延迟刷新
     }
 
     document.addEventListener("DOMContentLoaded", refreshGallery);
   </script>
 </body>
 </html>
+
