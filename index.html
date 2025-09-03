@@ -49,39 +49,45 @@
 
     // 上传入口
     async function startUpload(){
-      const files = document.getElementById("photoFiles").files;
-      if(files.length === 0) return alert("请选择文件");
-
-      for(const f of files){
-        const base64 = await fileToBase64(f);
-
-        // 触发 GitHub Actions workflow
-        await fetch(
-          `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
-          {
-            method: "POST",
-            headers: {
-              "Accept": "application/vnd.github+json",
-              "Authorization": `Bearer ${GH_TOKEN}`
-            },
-            body: JSON.stringify({
-              ref: "main",
-              inputs: { 
-                fileName: f.name,
-                content: base64
-              }
-            })
-          }
-        );
-      }
-
-      alert("上传成功 ✅，请稍等 Actions 更新 gallery.json");
-      setTimeout(refreshGallery, 5000); // 延迟刷新
+       const files = document.getElementById("photoFiles").files;
+       if(files.length === 0) return alert("请选择文件");
+    
+       for(const f of files){
+         const base64 = await fileToBase64(f);
+    
+         const res = await fetch(
+           `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
+           {
+             method: "POST",
+             headers: {
+               "Accept": "application/vnd.github+json",
+               "Authorization": `Bearer ${GH_TOKEN}`  // ⚠️ 这里将来要换成后端代理
+             },
+             body: JSON.stringify({
+               ref: "main",
+               inputs: { 
+                 fileName: f.name,
+                 content: base64
+               }
+             })
+           }
+         );
+    
+         if(!res.ok){
+           alert("上传失败 ❌，请检查 Token 或 workflow 权限");
+           return;
+         }
+       }
+    
+       alert("上传成功 ✅，请稍等 Actions 更新 gallery.json");
+       setTimeout(refreshGallery, 5000);
     }
+
 
     document.addEventListener("DOMContentLoaded", refreshGallery);
   </script>
 </body>
 </html>
+
 
 
