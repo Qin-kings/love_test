@@ -3,13 +3,11 @@ let isManageMode = false;
 let selectedImages = [];
 let currentAvatarId = null;
 let galleryItems = []; // 存储相册项的本地副本
-let currentPage = 1;
-const ITEMS_PER_PAGE = 12; // 每页显示12张图片
 
-// 默认头像路径
+// 默认头像路径 - 使用占位图
 const defaultAvatars = {
-    avatar1: "images/qinbaotai.png",
-    avatar2: "images/yanxuran.png"
+    avatar1: "https://via.placeholder.com/100?text=老公",
+    avatar2: "https://via.placeholder.com/100?text=老婆"
 };
 
 // 默认恋爱起始时间
@@ -25,9 +23,10 @@ const C = {
 
 // DOM 查询快捷方式
 const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
 
 // ========== 初始化函数 ==========
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
     // 初始化各个模块
     initAvatar();
     initPersonalInfo();
@@ -44,23 +43,32 @@ document.addEventListener('DOMContentLoaded', () => {
 function initAvatar() {
     ['avatar1','avatar2'].forEach(id => {
         const saved = localStorage.getItem(id);
-        if (saved) {
-            document.getElementById(id).src = saved;
-        } else {
-            document.getElementById(id).src = defaultAvatars[id];
+        const avatarElement = document.getElementById(id);
+        if (avatarElement) {
+            if (saved) {
+                avatarElement.src = saved;
+            } else {
+                avatarElement.src = defaultAvatars[id];
+            }
         }
     });
 
-    document.getElementById("avatarFileInput").addEventListener("change", function (event) {
-        if (event.target.files && event.target.files[0] && currentAvatarId) {
-            let reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById(currentAvatarId).src = e.target.result;
-                localStorage.setItem(currentAvatarId, e.target.result);
-            };
-            reader.readAsDataURL(event.target.files[0]);
-        }
-    });
+    const avatarFileInput = document.getElementById("avatarFileInput");
+    if (avatarFileInput) {
+        avatarFileInput.addEventListener("change", function (event) {
+            if (event.target.files && event.target.files[0] && currentAvatarId) {
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    const avatarElement = document.getElementById(currentAvatarId);
+                    if (avatarElement) {
+                        avatarElement.src = e.target.result;
+                    }
+                    localStorage.setItem(currentAvatarId, e.target.result);
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        });
+    }
 }
 
 // ========== 个人信息功能 ==========
@@ -77,13 +85,51 @@ const fallbackPersonalInfo = [
 
 function createInfoRow(project = '', ta = '', me = '') {
     const tr = document.createElement('tr');
-    // 创建表格行的代码
+    const tdProj = document.createElement('td');
+    tdProj.className = 'border p-2';
+    const inpProj = document.createElement('input');
+    inpProj.type = 'text';
+    inpProj.placeholder = '项目';
+    inpProj.className = 'w-full p-1 border rounded project-input';
+    inpProj.value = project;
+    tdProj.appendChild(inpProj);
+
+    const tdTa = document.createElement('td');
+    tdTa.className = 'border p-2';
+    const inpTa = document.createElement('input');
+    inpTa.type = 'text';
+    inpTa.placeholder = '老公 💙';
+    inpTa.className = 'w-full p-1 border rounded ta-input';
+    inpTa.value = ta;
+    tdTa.appendChild(inpTa);
+
+    const tdMe = document.createElement('td');
+    tdMe.className = 'border p-2 flex items-center gap-2';
+    const inpMe = document.createElement('input');
+    inpMe.type = 'text';
+    inpMe.placeholder = '老婆 💖';
+    inpMe.className = 'w-full p-1 border rounded me-input';
+    inpMe.value = me;
+    tdMe.appendChild(inpMe);
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'ml-2 px-2 py-1 bg-red-400 text-white rounded text-sm';
+    delBtn.textContent = '删';
+    delBtn.onclick = () => { tr.remove(); };
+    tdMe.appendChild(delBtn);
+
+    tr.appendChild(tdProj);
+    tr.appendChild(tdTa);
+    tr.appendChild(tdMe);
     return tr;
 }
 
 function addInfoRow() {
     const tbody = document.getElementById('infoTableBody');
-    tbody.appendChild(createInfoRow());
+    if (tbody) {
+        tbody.appendChild(createInfoRow());
+    }
 }
 
 function saveTableInfo() {
@@ -102,6 +148,7 @@ function saveTableInfo() {
 
 function loadTableInfo() {
     const tbody = document.getElementById('infoTableBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
     const saved = localStorage.getItem(PERSONAL_INFO_KEY);
 
@@ -117,13 +164,11 @@ function loadTableInfo() {
         }
     }
 
-    const defaultInfo = fallbackPersonalInfo;
-    defaultInfo.forEach(r => tbody.appendChild(createInfoRow(r.project, r.ta, r.me)));
+    fallbackPersonalInfo.forEach(r => tbody.appendChild(createInfoRow(r.project, r.ta, r.me)));
 }
 
 // ========== 相爱时长功能 ==========
 function initLoveTime() {
-    const startDate = getLoveDate();
     calcLoveTime();
 }
 
@@ -155,58 +200,78 @@ function calcLoveTime() {
     }
 }
 
-// ========== 相册功能 - 优化版本 ==========
+// ========== 相册功能 ==========
 function initGallery() {
-    // 初始化时先显示骨架屏
-    renderSkeletonLoader();
-    // 然后加载实际图片
     loadGalleryData();
 }
 
 function initEventListeners() {
     // 管理按钮
-    document.getElementById('manageGalleryBtn').addEventListener('click', toggleManageMode);
-    document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelectedImages);
+    const manageGalleryBtn = document.getElementById('manageGalleryBtn');
+    if (manageGalleryBtn) {
+        manageGalleryBtn.addEventListener('click', toggleManageMode);
+    }
+    
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', deleteSelectedImages);
+    }
     
     // 刷新按钮
-    document.getElementById('refreshGalleryBtn').addEventListener('click', () => {
-        currentPage = 1;
-        loadGalleryData();
-    });
+    const refreshGalleryBtn = document.getElementById('refreshGalleryBtn');
+    if (refreshGalleryBtn) {
+        refreshGalleryBtn.addEventListener('click', () => {
+            loadGalleryData();
+        });
+    }
     
     // 文件选择
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        const fileName = document.getElementById('fileName');
-        if (this.files.length > 0) {
-            fileName.textContent = this.files.length === 1 
-                ? this.files[0].name 
-                : `${this.files.length}个文件已选择`;
-        } else {
-            fileName.textContent = "未选择任何文件";
-        }
-    });
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const fileName = document.getElementById('fileName');
+            if (fileName) {
+                if (this.files.length > 0) {
+                    fileName.textContent = this.files.length === 1 
+                        ? this.files[0].name 
+                        : `${this.files.length}个文件已选择`;
+                } else {
+                    fileName.textContent = "未选择任何文件";
+                }
+            }
+        });
+    }
     
     // 上传按钮
-    document.getElementById('uploadBtn').addEventListener('click', startUpload);
+    const uploadBtn = document.getElementById('uploadBtn');
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', startUpload);
+    }
     
-    // 加载更多按钮
-    document.getElementById('loadMoreBtn').addEventListener('click', loadMoreImages);
-}
-
-// 渲染骨架屏
-function renderSkeletonLoader() {
-    const container = $('#gallery');
-    container.innerHTML = '';
+    // 设置按钮
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', openSettingsModal);
+    }
     
-    for (let i = 0; i < ITEMS_PER_PAGE; i++) {
-        const div = document.createElement('div');
-        div.className = 'relative';
-        
-        const skeleton = document.createElement('div');
-        skeleton.className = 'w-full h-40 rounded-lg skeleton';
-        
-        div.appendChild(skeleton);
-        container.appendChild(div);
+    // 保存设置按钮
+    const modalSaveCfgBtn = document.getElementById('modalSaveCfgBtn');
+    if (modalSaveCfgBtn) {
+        modalSaveCfgBtn.addEventListener('click', saveFormToCfg);
+    }
+    
+    // 清除Token按钮
+    const clearTokenBtn = document.getElementById('clearTokenBtn');
+    if (clearTokenBtn) {
+        clearTokenBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem(C.ghTokenSaved);
+            const ghTokenInput = document.getElementById('ghToken');
+            if (ghTokenInput) ghTokenInput.value = '';
+            const rememberTokenCheckbox = document.getElementById('rememberToken');
+            if (rememberTokenCheckbox) rememberTokenCheckbox.checked = false;
+            showNotification('已清除本机保存的 Token');
+        });
     }
 }
 
@@ -215,45 +280,36 @@ async function loadGalleryData() {
     try {
         const { list } = await fetchManifest();
         galleryItems = list || [];
-        
-        // 重置分页
-        currentPage = 1;
-        
-        // 渲染第一页
-        renderGalleryPage();
-        
-        // 如果有更多图片，显示加载更多按钮
-        toggleLoadMoreButton();
-        
+        renderGallery();
     } catch (e) {
         console.error('加载相册数据失败:', e);
-        $('#gallery').innerHTML = `
-            <div class="col-span-full text-center py-8 text-red-500">
-                <i class="fa fa-exclamation-triangle text-4xl mb-3"></i>
-                <p>加载相册失败：${e.message || e}</p>
-                <button onclick="loadGalleryData()" class="mt-3 px-4 py-2 bg-pink-500 text-white rounded">
-                    重试
-                </button>
-            </div>
-        `;
+        const container = document.getElementById('gallery');
+        if (container) {
+            container.innerHTML = `
+                <div class="col-span-full text-center py-8 text-red-500">
+                    <i class="fa fa-exclamation-triangle text-4xl mb-3"></i>
+                    <p>加载相册失败：${e.message || e}</p>
+                    <button onclick="loadGalleryData()" class="mt-3 px-4 py-2 bg-pink-500 text-white rounded">
+                        重试
+                    </button>
+                </div>
+            `;
+        }
     }
 }
 
-// 渲染当前页的图片
-function renderGalleryPage() {
-    const container = $('#gallery');
+// 渲染相册
+function renderGallery() {
+    const container = document.getElementById('gallery');
+    if (!container) return;
     
-    // 如果是第一页，清空容器
-    if (currentPage === 1) {
-        container.innerHTML = '';
-    }
+    // 重置选择状态
+    selectedImages = [];
+    updateDeleteButtonState();
     
-    // 计算当前页的图片范围
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, galleryItems.length);
-    const currentItems = galleryItems.slice(startIndex, endIndex);
-    
-    if (currentItems.length === 0 && currentPage === 1) {
+    container.innerHTML = '';
+
+    if (!galleryItems || galleryItems.length === 0) {
         container.innerHTML = `
             <div class="col-span-full text-center py-8 text-gray-500">
                 <i class="fa fa-camera text-4xl mb-3"></i>
@@ -263,8 +319,7 @@ function renderGalleryPage() {
         return;
     }
     
-    // 渲染当前页的图片
-    currentItems.forEach((item, idx) => {
+    galleryItems.slice().sort((a,b) => (b.ts||0) - (a.ts||0)).forEach((item, idx) => {
         const div = document.createElement('div');
         div.className = 'relative cursor-pointer group gallery-item';
         div.setAttribute('data-src', item.src);
@@ -274,13 +329,6 @@ function renderGalleryPage() {
         img.alt = item.alt || `照片 ${idx+1}`;
         img.className = 'w-full h-40 object-cover rounded-lg shadow';
         img.loading = 'lazy'; // 懒加载
-        
-        // 添加加载完成后的淡入效果
-        img.onload = function() {
-            this.classList.add('opacity-100');
-            this.classList.remove('opacity-0');
-        };
-        img.classList.add('opacity-0', 'transition-opacity', 'duration-300');
         
         // 添加悬停效果
         const overlay = document.createElement('div');
@@ -318,28 +366,9 @@ function renderGalleryPage() {
     addGalleryClickHandlers();
 }
 
-// 加载更多图片
-function loadMoreImages() {
-    currentPage++;
-    renderGalleryPage();
-    toggleLoadMoreButton();
-}
-
-// 显示/隐藏加载更多按钮
-function toggleLoadMoreButton() {
-    const loadMoreContainer = $('#loadMoreContainer');
-    const totalPages = Math.ceil(galleryItems.length / ITEMS_PER_PAGE);
-    
-    if (currentPage < totalPages) {
-        loadMoreContainer.classList.remove('hidden');
-    } else {
-        loadMoreContainer.classList.add('hidden');
-    }
-}
-
 // 添加图片点击事件处理
 function addGalleryClickHandlers() {
-    const gallery = $('#gallery');
+    const gallery = document.getElementById('gallery');
     if (!gallery) return;
     
     gallery.removeEventListener('click', handleGalleryClick);
@@ -362,37 +391,23 @@ function handleGalleryClick(e) {
 async function startUpload() {
     if (!checkRequiredSettings()) return;
     
-    const files = Array.from($('#fileInput').files || []);
+    const files = Array.from(document.getElementById('fileInput').files || []);
     if (files.length === 0) {
         showNotification('请选择图片');
         return;
     }
     
     try {
-        // 显示上传进度
-        const progressContainer = $('#uploadProgressContainer');
-        const progressBar = $('#uploadProgressBar');
-        const progressText = $('#uploadProgressText');
-        
-        progressContainer.classList.remove('hidden');
-        progressBar.style.width = '0%';
-        progressText.textContent = '0%';
+        showNotification('上传中…');
         
         // 读取当前manifest
         const { list, sha } = await fetchManifest();
         const addedUrls = [];
         
         // 逐个上传文件
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            
-            // 更新进度
-            const progress = Math.round((i / files.length) * 100);
-            progressBar.style.width = `${progress}%`;
-            progressText.textContent = `${progress}%`;
-            
-            const url = await uploadToCloudinary(file);
-            const item = { src: url, alt: file.name, who: '我们', ts: Date.now() };
+        for (const f of files) {
+            const url = await uploadToCloudinary(f);
+            const item = { src: url, alt: f.name, who: '我们', ts: Date.now() };
             list.push(item);
             addedUrls.push(url);
             
@@ -400,14 +415,8 @@ async function startUpload() {
             galleryItems.unshift(item);
         }
         
-        // 完成进度
-        progressBar.style.width = '100%';
-        progressText.textContent = '100%';
-        
-        // 立即更新本地显示
-        currentPage = 1;
-        renderGalleryPage();
-        toggleLoadMoreButton();
+        // 立即更新显示
+        renderGallery();
         
         // 异步写回 GitHub
         setTimeout(async () => {
@@ -418,17 +427,17 @@ async function startUpload() {
                 console.error('写入GitHub失败:', e);
                 showNotification('上传完成但同步到GitHub失败');
             } finally {
-                // 隐藏进度条
-                progressContainer.classList.add('hidden');
-                $('#fileInput').value = '';
-                $('#fileName').textContent = "未选择任何文件";
+                // 清空文件选择
+                const fileInput = document.getElementById('fileInput');
+                if (fileInput) fileInput.value = '';
+                const fileName = document.getElementById('fileName');
+                if (fileName) fileName.textContent = "未选择任何文件";
             }
         }, 500);
         
     } catch (e) {
         console.error('上传失败:', e);
         showNotification('上传失败: ' + (e.message || e));
-        $('#uploadProgressContainer').classList.add('hidden');
     }
 }
 
@@ -441,13 +450,13 @@ async function deleteSelectedImages() {
     }
     
     try {
+        showNotification('删除中...');
+        
         // 立即从本地相册中移除
         galleryItems = galleryItems.filter(item => !selectedImages.includes(item.src));
         
         // 立即更新显示
-        currentPage = 1;
-        renderGalleryPage();
-        toggleLoadMoreButton();
+        renderGallery();
         
         // 退出管理模式
         toggleManageMode();
@@ -475,37 +484,55 @@ async function deleteSelectedImages() {
 function toggleManageMode() {
     isManageMode = !isManageMode;
     
-    const manageBtn = $('#manageGalleryBtn');
-    const deleteContainer = $('#deleteSelectedContainer');
+    const manageBtn = document.getElementById('manageGalleryBtn');
+    const deleteContainer = document.getElementById('deleteSelectedContainer');
     
-    if (isManageMode) {
-        manageBtn.innerHTML = '<i class="fa fa-times"></i> 取消管理';
-        manageBtn.classList.remove('bg-blue-500');
-        manageBtn.classList.add('bg-gray-500');
-        deleteContainer.classList.remove('hidden');
-    } else {
-        manageBtn.innerHTML = '<i class="fa fa-cog"></i> 管理';
-        manageBtn.classList.remove('bg-gray-500');
-        manageBtn.classList.add('bg-blue-500');
-        deleteContainer.classList.add('hidden');
-        
-        // 清除选择状态
+    if (manageBtn) {
+        if (isManageMode) {
+            manageBtn.innerHTML = '<i class="fa fa-times"></i> 取消管理';
+            manageBtn.classList.remove('bg-blue-500');
+            manageBtn.classList.add('bg-gray-500');
+        } else {
+            manageBtn.innerHTML = '<i class="fa fa-cog"></i> 管理';
+            manageBtn.classList.remove('bg-gray-500');
+            manageBtn.classList.add('bg-blue-500');
+        }
+    }
+    
+    if (deleteContainer) {
+        if (isManageMode) {
+            deleteContainer.classList.remove('hidden');
+        } else {
+            deleteContainer.classList.add('hidden');
+        }
+    }
+    
+    // 退出管理模式时，清除所有选择状态
+    if (!isManageMode) {
         selectedImages = [];
+        
+        // 取消所有选择框的选中状态
         document.querySelectorAll('.image-checkbox').forEach(checkbox => {
             checkbox.checked = false;
         });
+        
+        // 更新删除按钮状态
         updateDeleteButtonState();
     }
     
     // 显示/隐藏所有选择框
     document.querySelectorAll('.image-checkbox').forEach(checkbox => {
-        checkbox.parentElement.classList.toggle('hidden', !isManageMode);
+        if (checkbox.parentElement) {
+            checkbox.parentElement.classList.toggle('hidden', !isManageMode);
+        }
     });
 }
 
 // 更新删除按钮状态
 function updateDeleteButtonState() {
-    const deleteBtn = $('#deleteSelectedBtn');
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    if (!deleteBtn) return;
+    
     if (selectedImages.length > 0) {
         deleteBtn.disabled = false;
         deleteBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
@@ -524,23 +551,68 @@ function openModal(modalId, avatarId = null) {
     if (modalId === 'avatarModal' && avatarId) {
         currentAvatarId = avatarId;
     }
-    document.getElementById(modalId).classList.remove("hidden");
+    if (modalId === 'loveDateModal') {
+        // 保存原始值
+        originalLoveDate = getLoveDate().substring(0, 10);
+        const loveDateInput = document.getElementById('loveDateInModal');
+        if (loveDateInput) {
+            loveDateInput.value = originalLoveDate;
+        }
+    }
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.add("hidden");
+    if (modalId === 'loveDateModal') {
+        // 恢复原始值
+        const loveDateInput = document.getElementById('loveDateInModal');
+        if (loveDateInput) {
+            loveDateInput.value = originalLoveDate;
+        }
+    }
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add("hidden");
+    }
     if (modalId === 'avatarModal') {
         currentAvatarId = null;
-        document.getElementById("avatarFileInput").value = "";
+        const avatarFileInput = document.getElementById("avatarFileInput");
+        if (avatarFileInput) {
+            avatarFileInput.value = "";
+        }
     }
 }
 
 function resetAvatar() {
     if (currentAvatarId) {
         localStorage.removeItem(currentAvatarId);
-        document.getElementById(currentAvatarId).src = defaultAvatars[currentAvatarId];
+        const avatarElement = document.getElementById(currentAvatarId);
+        if (avatarElement) {
+            avatarElement.src = defaultAvatars[currentAvatarId];
+        }
     }
     closeModal('avatarModal');
+}
+
+function resetLoveDateInput() {
+    const loveDateInput = document.getElementById('loveDateInModal');
+    if (loveDateInput) {
+        loveDateInput.value = DEFAULT_LOVE_DATE.substring(0, 10);
+    }
+}
+
+function saveLoveDateFromModal() {
+    const inputDate = document.getElementById('loveDateInModal').value;
+    if (inputDate) {
+        const finalDate = `${inputDate}T00:00:00+08:00`;
+        localStorage.setItem("loveDate", finalDate);
+        calcLoveTime();
+        closeModal('loveDateModal');
+        showNotification('时间已更新 ❤️');
+    }
 }
 
 function showNotification(message) {
@@ -552,36 +624,268 @@ function showNotification(message) {
 }
 
 function openImageModal(src) {
-    const modal = $('#imageModal');
-    const modalImage = $('#modalImage');
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
     
-    modalImage.src = src;
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    // 确保URL有效
+    if (!src || typeof src !== 'string') {
+        console.error('无效的图片URL:', src);
+        return;
+    }
+    
+    if (modalImage) {
+        modalImage.src = src;
+    }
+    
+    if (modal) {
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
 }
 
 function closeImageModal() {
-    const modal = $('#imageModal');
-    modal.classList.add('hidden');
-    document.body.style.overflow = '';
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
+function openSettingsModal() {
+    loadCfgToForm();
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal) {
+        settingsModal.classList.remove('hidden');
+    }
+}
+
+function closeSettingsModal() {
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal) {
+        settingsModal.classList.add('hidden');
+    }
+}
+
+function loadCfgToForm() {
+    // 确保元素存在再设置值
+    const cloudNameInput = document.getElementById('cloudName');
+    if (cloudNameInput) cloudNameInput.value = localStorage.getItem(C.cloudName) || 'dbqhemrnw';
+    
+    const uploadPresetInput = document.getElementById('uploadPreset');
+    if (uploadPresetInput) uploadPresetInput.value = localStorage.getItem(C.uploadPreset) || 'unsigned_preset';
+    
+    const ghOwnerInput = document.getElementById('ghOwner');
+    if (ghOwnerInput) ghOwnerInput.value = localStorage.getItem(C.ghOwner) || 'Qin-kings';
+    
+    const ghRepoInput = document.getElementById('ghRepo');
+    if (ghRepoInput) ghRepoInput.value = localStorage.getItem(C.ghRepo) || 'love';
+    
+    const ghBranchInput = document.getElementById('ghBranch');
+    if (ghBranchInput) ghBranchInput.value = localStorage.getItem(C.ghBranch) || 'main';
+    
+    const ghFileInput = document.getElementById('ghFile');
+    if (ghFileInput) ghFileInput.value = localStorage.getItem(C.ghFile) || 'gallery.json';
+    
+    const t = localStorage.getItem(C.ghTokenSaved) || '';
+    const ghTokenInput = document.getElementById('ghToken');
+    if (ghTokenInput) {
+        ghTokenInput.value = t;
+    }
+    const rememberTokenCheckbox = document.getElementById('rememberToken');
+    if (rememberTokenCheckbox) {
+        rememberTokenCheckbox.checked = !!t;
+    }
+}
+
+function saveFormToCfg() {
+    const cloudNameInput = document.getElementById('cloudName');
+    if (cloudNameInput) localStorage.setItem(C.cloudName, cloudNameInput.value.trim());
+    
+    const uploadPresetInput = document.getElementById('uploadPreset');
+    if (uploadPresetInput) localStorage.setItem(C.uploadPreset, uploadPresetInput.value.trim());
+    
+    const ghOwnerInput = document.getElementById('ghOwner');
+    if (ghOwnerInput) localStorage.setItem(C.ghOwner, ghOwnerInput.value.trim());
+    
+    const ghRepoInput = document.getElementById('ghRepo');
+    if (ghRepoInput) localStorage.setItem(C.ghRepo, ghRepoInput.value.trim());
+    
+    const ghBranchInput = document.getElementById('ghBranch');
+    if (ghBranchInput) localStorage.setItem(C.ghBranch, ghBranchInput.value.trim() || 'main');
+    
+    const ghFileInput = document.getElementById('ghFile');
+    if (ghFileInput) localStorage.setItem(C.ghFile, ghFileInput.value.trim() || 'gallery.json');
+    
+    const ghTokenInput = document.getElementById('ghToken');
+    const rememberTokenCheckbox = document.getElementById('rememberToken');
+    const t = ghTokenInput ? ghTokenInput.value.trim() : '';
+    if (rememberTokenCheckbox && rememberTokenCheckbox.checked && t) {
+        localStorage.setItem(C.ghTokenSaved, t);
+    }
+    if (rememberTokenCheckbox && !rememberTokenCheckbox.checked) {
+        localStorage.removeItem(C.ghTokenSaved);
+    }
+    showNotification('相册设置已保存 ✅');
+}
+
+function getCfg() {
+    const cloudNameInput = document.getElementById('cloudName');
+    const uploadPresetInput = document.getElementById('uploadPreset');
+    const ghOwnerInput = document.getElementById('ghOwner');
+    const ghRepoInput = document.getElementById('ghRepo');
+    const ghBranchInput = document.getElementById('ghBranch');
+    const ghFileInput = document.getElementById('ghFile');
+    const ghTokenInput = document.getElementById('ghToken');
+    
+    return {
+        cloudName: cloudNameInput ? cloudNameInput.value.trim() : '',
+        uploadPreset: uploadPresetInput ? uploadPresetInput.value.trim() : '',
+        ghOwner: ghOwnerInput ? ghOwnerInput.value.trim() : '',
+        ghRepo: ghRepoInput ? ghRepoInput.value.trim() : '',
+        ghBranch: ghBranchInput ? ghBranchInput.value.trim() || 'main' : 'main',
+        ghFile: ghFileInput ? ghFileInput.value.trim() || 'gallery.json' : 'gallery.json',
+        ghToken: ghTokenInput ? ghTokenInput.value.trim() : localStorage.getItem(C.ghTokenSaved) || ''
+    };
 }
 
 // Cloudinary 和 GitHub 相关函数
 async function fetchManifest() {
-    // 实现从GitHub获取manifest的逻辑
-    return { list: [], sha: null };
+    // 优先尝试 GitHub API（通常比 raw 更"新鲜"）
+    try {
+        const r = await readManifestViaAPI();
+        return r; // {list, sha}
+    } catch (e) {
+        console.warn('GitHub API 读取失败，回退到 raw：', e);
+        try {
+            const list = await readManifestViaRaw();
+            return { list, sha: null };
+        } catch (rawError) {
+            console.error('Raw fetch also failed:', rawError);
+            // 如果两者都失败，返回空列表
+            return { list: [], sha: null };
+        }
+    }
+}
+
+async function readManifestViaAPI() {
+    const { ghOwner, ghRepo, ghFile, ghBranch, ghToken } = getCfg();
+    const url = `https://api.github.com/repos/${ghOwner}/${ghRepo}/contents/${encodeURIComponent(ghFile)}?ref=${encodeURIComponent(ghBranch)}`;
+    
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if (ghToken) {
+        headers['Authorization'] = `Bearer ${ghToken}`;
+    }
+    
+    const res = await fetch(url, { headers });
+    if (res.status === 404) return { list: [], sha: null };
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.message || ('HTTP ' + res.status));
+    let list = [];
+    try { list = JSON.parse(atob(j.content || '')) || []; } catch (e) { list = []; }
+    return { list, sha: j.sha || null };
+}
+
+async function readManifestViaRaw() {
+    const { ghOwner, ghRepo, ghFile, ghBranch } = getCfg();
+    const url = `https://raw.githubusercontent.com/${ghOwner}/${ghRepo}/${ghBranch}/${ghFile}?t=${Date.now()}`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('raw fetch failed: ' + res.status);
+    return await res.json();
 }
 
 async function uploadToCloudinary(file) {
-    // 实现上传到Cloudinary的逻辑
-    return "https://example.com/image.jpg";
+    const { cloudName, uploadPreset } = getCfg();
+    if (!cloudName || !uploadPreset) throw new Error('请先填写 Cloudinary cloudName 与 unsigned preset（设置面板）');
+    const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', uploadPreset);
+    const res = await fetch(endpoint, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok || !data.secure_url) {
+        console.error('Cloudinary 返回：', data);
+        throw new Error('Cloudinary 上传失败：' + (data.error?.message || res.status));
+    }
+    return data.secure_url;
 }
 
 async function writeManifest(list, sha, message) {
-    // 实现写入GitHub的逻辑
+    const { ghOwner, ghRepo, ghFile, ghBranch, ghToken } = getCfg();
+    if (!ghToken) throw new Error('请在设置里输入 GitHub Token（仅本机）');
+    const apiUrl = `https://api.github.com/repos/${ghOwner}/${ghRepo}/contents/${encodeURIComponent(ghFile)}`;
+
+    const body = {
+        message: message || 'update gallery',
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(list, null, 2)))),
+        branch: ghBranch
+    };
+    if (sha) body.sha = sha; // 更新已有文件
+    const res = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/vnd.github+json',
+            'Authorization': `Bearer ${ghToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
+    const text = await res.text();
+    if (!res.ok) {
+        console.error('writeManifest error', res.status, text);
+        throw new Error('写入 gallery.json 失败：' + text);
+    }
+    return JSON.parse(text);
 }
 
 function checkRequiredSettings() {
-    // 检查必要设置的逻辑
+    const { cloudName, uploadPreset, ghOwner, ghRepo, ghToken } = getCfg();
+    const errors = [];
+    
+    if (!cloudName) errors.push('Cloudinary Cloud Name');
+    if (!uploadPreset) errors.push('Cloudinary Upload Preset');
+    if (!ghOwner) errors.push('GitHub Owner');
+    if (!ghRepo) errors.push('GitHub Repo');
+    if (!ghToken) errors.push('GitHub Token');
+    
+    if (errors.length > 0) {
+        alert(`请先完成以下设置：\n${errors.join('\n')}\n\n点击右上角的设置按钮进行配置。`);
+        openSettingsModal();
+        return false;
+    }
+    
     return true;
+}
+
+// ESC键关闭图片模态框
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const imageModal = document.getElementById('imageModal');
+        if (imageModal && !imageModal.classList.contains('hidden')) {
+            closeImageModal();
+        }
+        
+        const settingsModal = document.getElementById('settingsModal');
+        if (settingsModal && !settingsModal.classList.contains('hidden')) {
+            closeSettingsModal();
+        }
+    }
+});
+
+// 点击模态框背景关闭
+const imageModal = document.getElementById('imageModal');
+if (imageModal) {
+    imageModal.addEventListener('click', (e) => {
+        if (e.target.id === 'imageModal') {
+            closeImageModal();
+        }
+    });
+}
+
+const settingsModal = document.getElementById('settingsModal');
+if (settingsModal) {
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target.id === 'settingsModal') {
+            closeSettingsModal();
+        }
+    });
 }
