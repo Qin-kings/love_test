@@ -1,245 +1,1125 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情侣小站 ❤️</title>
-    <!-- 使用本地构建的Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <style>
-        .love-time-hover:hover {
-            background-color: #fce7f3 !important;
-        }
-        .gallery-item {
-            transition: all 0.3s ease;
-        }
-        .gallery-item:hover {
-            transform: scale(1.03);
-        }
-    </style>
+   <meta charset="UTF-8">
+   <title>情侣小站 ❤️</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <style>
+      .love-time-hover:hover {
+        background-color: #fce7f3 !important;
+      }
+      .gallery-item {
+        transition: all 0.3s ease;
+      }
+      .gallery-item.selected {
+        outline: 3px solid #ec4899;
+        outline-offset: -3px;
+      }
+      .uploading {
+        opacity: 0.7;
+        position: relative;
+      }
+      .uploading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+   </style>
+   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
 <body class="bg-gradient-to-r from-pink-200 via-pink-300 to-pink-400 min-h-screen flex flex-col items-center p-6">
-    <!-- 设置按钮 -->
-    <button id="settingsBtn" class="fixed top-4 right-4 z-50 bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600 transition-all">
-        <i class="fa fa-cog text-xl"></i>
-    </button>
-    
-    <h1 class="text-4xl font-bold text-white mb-6">我们的情侣小站 💕</h1>
+  <!-- 设置按钮 -->
+  <button id="settingsBtn" class="fixed top-4 right-4 z-50 bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600 transition-all">
+    <i class="fa fa-cog text-xl"></i>
+  </button>
+  <h1 class="text-4xl font-bold text-white mb-6">我们的情侣小站 💕</h1>
 
-    <!-- 头像区域 -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6 relative">
-        <h2 class="text-xl font-semibold mb-4 text-center">我们的头像</h2>
-        <div class="relative w-full flex justify-between">
-            <!-- 左边头像 -->
-            <div class="flex flex-col items-center ml-[20%]">
-                <img id="avatar1"
-                    class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
-                    src="https://via.placeholder.com/100?text=老公"
-                    alt="老公头像"
-                    onclick="openModal('avatarModal', 'avatar1')">
-                <p class="text-sm text-gray-500">老公 💙</p>
-            </div>
+  <!-- 头像区域 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6 relative">
+      <h2 class="text-xl font-semibold mb-4 text-center">我们的头像</h2>
+    <div class="relative w-full flex justify-between">
+      <!-- 左边头像 -->
+      <div class="flex flex-col items-center ml-[20%]">
+        <img id="avatar1"
+             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+             src="https://picsum.photos/id/1/200/200"
+             alt="老公头像"
+             onclick="openModal('avatarModal', 'avatar1')">
+        <p class="text-sm text-gray-500">老公 💙</p>
+      </div>
 
-            <!-- 右边头像 -->
-            <div class="flex flex-col items-center mr-[20%]">
-                <img id="avatar2"
-                    class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
-                    src="https://via.placeholder.com/100?text=老婆"
-                    alt="老婆头像"
-                    onclick="openModal('avatarModal', 'avatar2')">
-                <p class="text-sm text-gray-500">老婆 💖</p>
-            </div>
-        </div>
+      <!-- 右边头像 -->
+      <div class="flex flex-col items-center mr-[20%]">
+        <img id="avatar2"
+             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+             src="https://picsum.photos/id/2/200/200"
+             alt="老婆头像"
+             onclick="openModal('avatarModal', 'avatar2')">
+        <p class="text-sm text-gray-500">老婆 💖</p>
+      </div>
     </div>
+  </div>
 
-    <!-- 个人信息 -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
-        <h2 class="text-xl font-semibold mb-4">个人信息</h2>
-        <table id="infoTable" class="w-full border-collapse border text-center">
-            <thead>
-                <tr class="bg-gray-100">
-                    <th class="border p-2">项目</th>
-                    <th class="border p-2">老公 💙</th>
-                    <th class="border p-2">老婆 💖</th>
-                </tr>
-            </thead>
-            <tbody id="infoTableBody">
-                <!-- JS 会在加载时填充默认行或保存的数据 -->
-            </tbody>
-        </table>
-        <div class="flex gap-3 mt-4">
-            <button type="button" onclick="addInfoRow()" class="px-4 py-2 bg-green-400 text-white rounded-xl shadow">新增</button>
-            <button type="button" onclick="saveTableInfo()" class="px-4 py-2 bg-pink-400 text-white rounded-xl shadow">保存</button>
-        </div>
+  <!-- 头像修改弹出层 -->
+  <div id="avatarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+      <h3 class="text-lg font-semibold mb-4">更换头像</h3>
+      <input type="file" id="avatarFileInput" accept="image/*" class="mb-3">
+      <div class="flex justify-between">
+        <button onclick="resetAvatar()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+        <button onclick="closeModal('avatarModal')" class="px-3 py-1 bg-pink-500 text-white rounded">关闭</button>
+      </div>
     </div>
+  </div>
 
-    <!-- 相爱时长 -->
-    <div class="bg-pink-50 rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
-        <h2 class="text-xl font-semibold mb-4">我们的相爱时长</h2>
-        <div class="border border-pink-200 rounded p-4 text-center cursor-pointer hover:bg-pink-100 transition-colors" onclick="openModal('loveDateModal')">
-            <p id="loveDays" class="text-lg font-bold text-pink-600"></p>
-        </div>
+  <!-- 个人信息 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+    <h2 class="text-xl font-semibold mb-4">个人信息</h2>
+    <table id="infoTable" class="w-full border-collapse border text-center">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="border p-2">项目</th>
+          <th class="border p-2">老公 💙</th>
+          <th class="border p-2">老婆 💖</th>
+        </tr>
+      </thead>
+      <tbody id="infoTableBody">
+        <!-- JS 会在加载时填充默认行或保存的数据 -->
+      </tbody>
+    </table>
+    <div class="flex gap-3 mt-4">
+      <button type="button" onclick="addInfoRow()" class="px-4 py-2 bg-green-400 text-white rounded-xl shadow">新增</button>
+      <button type="button" onclick="saveTableInfo()" class="px-4 py-2 bg-pink-400 text-white rounded-xl shadow">保存</button>
     </div>
+  </div>
 
-    <!-- 相爱时长修改弹出层 -->
-    <div id="loveDateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
-            <h3 class="text-lg font-semibold mb-4">修改相爱起始时间</h3>
-            <input type="date" id="loveDateInModal" class="border rounded p-2 mb-3 w-full">
-            <div class="flex justify-between">
-                <button onclick="resetLoveDateInput()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
-                <button onclick="saveLoveDateFromModal()" class="px-3 py-1 bg-pink-500 text-white rounded">确定</button>
-                <button onclick="closeModal('loveDateModal')" class="px-3 py-1 bg-gray-500 text-white rounded">关闭</button>
-            </div>
-        </div>
+  <!-- 相爱时长（修复显示问题） -->
+  <div class="bg-pink-50 rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+    <h2 class="text-xl font-semibold mb-4">我们的相爱时长</h2>
+    <div class="border border-pink-200 rounded p-4 text-center cursor-pointer hover:bg-pink-100 transition-colors" onclick="openModal('loveDateModal')">
+      <p id="loveDays" class="text-lg font-bold text-pink-600"></p>
     </div>
+  </div>
 
-    <!-- 生活相册 -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
-        <!-- 标题和操作区 -->
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-semibold text-pink-700">我们的相册 📸</h2>
-            <div class="flex gap-2">
-                <button id="refreshGalleryBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg flex items-center gap-2 hover:bg-pink-600 transition-colors">
-                    <i class="fa fa-refresh"></i> 刷新相册
-                </button>
-                <button id="manageGalleryBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors">
-                    <i class="fa fa-cog"></i> 管理
-                </button>
-            </div>
-        </div>
-
-        <!-- 上传卡片 -->
-        <div class="bg-pink-50 rounded-xl p-5 mb-6 border border-pink-200">
-            <h3 class="font-semibold text-pink-800 mb-3 text-lg">捕捉美好瞬间</h3>
-            <p class="text-sm text-pink-600 mb-4">上传图片到 Cloudinary 并保存到 GitHub</p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 items-start">
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">选择图片</label>
-                    <div class="flex items-center gap-3">
-                        <label for="fileInput" class="cursor-pointer bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded-lg hover:bg-pink-50 transition-colors">
-                            <i class="fa fa-cloud-upload mr-2"></i>选择文件
-                        </label>
-                        <span id="fileName" class="text-sm text-gray-500">未选择任何文件</span>
-                        <input id="fileInput" type="file" accept="image/*" multiple class="hidden">
-                    </div>
-                </div>
-                
-                <button id="uploadBtn" class="px-5 py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors flex items-center gap-2">
-                    <i class="fa fa-paper-plane"></i> 上传图片
-                </button>
-            </div>
-            
-            <p id="msg" class="text-sm mt-3 text-pink-600"></p>
-        </div>
-
-        <!-- 相册网格 -->
-        <div class="mb-4">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">我们的回忆</h3>
-        </div>
-        
-        <!-- 删除按钮 -->
-        <div id="deleteSelectedContainer" class="hidden mt-4">
-            <button id="deleteSelectedBtn" class="px-4 py-2 bg-gray-400 text-white rounded-lg flex items-center gap-2 cursor-not-allowed" disabled>
-                <i class="fa fa-trash"></i> 删除选中
-            </button>
-        </div>
-        
-        <!-- 相册网格容器 -->
-        <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <!-- 图片将通过JS动态添加 -->
-        </div>
+  <!-- 相爱时长修改弹出层 -->
+  <div id="loveDateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+      <h3 class="text-lg font-semibold mb-4">修改相爱起始时间</h3>
+      <input type="date" id="loveDateInModal" class="border rounded p-2 mb-3 w-full">
+      <div class="flex justify-between">
+        <button onclick="resetLoveDateInput()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+        <button onclick="saveLoveDateFromModal()" class="px-3 py-1 bg-pink-500 text-white rounded">确定</button>
+        <button onclick="closeModal('loveDateModal')" class="px-3 py-1 bg-gray-500 text-white rounded">关闭</button>
+      </div>
     </div>
+  </div>
 
-    <!-- 头像修改弹出层 -->
-    <div id="avatarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
-            <h3 class="text-lg font-semibold mb-4">更换头像</h3>
-            <input type="file" id="avatarFileInput" accept="image/*" class="mb-3">
-            <div class="flex justify-between">
-                <button onclick="resetAvatar()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
-                <button onclick="closeModal('avatarModal')" class="px-3 py-1 bg-pink-500 text-white rounded">关闭</button>
-            </div>
+  <!-- 设置浮层 -->
+  <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+      <h2 class="text-xl font-semibold text-pink-700 mb-4">相册设置</h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="col-span-1 sm:col-span-2">
+          <h2 class="font-semibold text-gray-700 mb-2">Cloudinary</h2>
         </div>
-    </div>
+        <label class="block">
+          <span class="text-sm text-gray-600">Cloud name</span>
+          <input id="cloudName" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：abcd1234" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Unsigned upload preset</span>
+          <input id="uploadPreset" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：unsigned_preset" />
+        </label>
 
-    <!-- 设置浮层 -->
-    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-            <h2 class="text-xl font-semibold text-pink-700 mb-4">相册设置</h2>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div class="col-span-1 sm:col-span-2">
-                    <h2 class="font-semibold text-gray-700 mb-2">Cloudinary</h2>
-                </div>
-                <label class="block">
-                    <span class="text-sm text-gray-600">Cloud name</span>
-                    <input id="cloudName" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：abcd1234" />
-                </label>
-                <label class="block">
-                    <span class="text-sm text-gray-600">Unsigned upload preset</span>
-                    <input id="uploadPreset" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：unsigned_preset" />
-                </label>
-
-                <div class="col-span-1 sm:col-span-2 mt-2">
-                    <h2 class="font-semibold text-gray-700 mb-2">GitHub</h2>
-                </div>
-                <label class="block">
-                    <span class="text-sm text-gray-600">Owner（用户名/组织）</span>
-                    <input id="ghOwner" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：yourname" />
-                </label>
-                <label class="block">
-                    <span class="text-sm text-gray-600">Repo</span>
-                    <input id="ghRepo" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：love-gallery" />
-                </label>
-                <label class="block">
-                    <span class="text-sm text-gray-600">Branch</span>
-                    <input id="ghBranch" class="w-full mt-1 border rounded px-2 py-1" placeholder="默认 main" value="main" />
-                </label>
-                <label class="block">
-                    <span class="text-sm text-gray-600">Manifest 路径</span>
-                    <input id="ghFile" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：gallery.json" value="gallery.json" />
-                </label>
-                <label class="block sm:col-span-2">
-                    <span class="text-sm text-gray-600">GitHub Token（PAT，写入权限）</span>
-                    <input id="ghToken" type="password" class="w-full mt-1 border rounded px-2 py-1" placeholder="只在本机输入，不要提交到仓库" />
-                    <div class="flex items-center gap-3 mt-2">
-                        <label class="inline-flex items-center gap-2 text-sm">
-                            <input id="rememberToken" type="checkbox" class="scale-110" />
-                            <span>记住 Token（仅保存在本机 localStorage）</span>
-                        </label>
-                        <button id="clearTokenBtn" class="text-xs text-gray-500 underline">清除已保存 Token</button>
-                    </div>
-                </label>
-            </div>
-
-            <div class="mt-4 flex gap-2">
-                <button id="modalSaveCfgBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg">保存设置</button>
-                <button onclick="closeSettingsModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg border">关闭</button>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">
-                提示：先在仓库创建 <code>gallery.json</code>，内容为 <code>[]</code>。页面会使用 GitHub API 读取最新内容（优于 raw.githubusercontent）。
-            </p>
+        <div class="col-span-1 sm:col-span-2 mt-2">
+          <h2 class="font-semibold text-gray-700 mb-2">GitHub</h2>
         </div>
+        <label class="block">
+          <span class="text-sm text-gray-600">Owner（用户名/组织）</span>
+          <input id="ghOwner" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：yourname" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Repo</span>
+          <input id="ghRepo" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：love-gallery" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Branch</span>
+          <input id="ghBranch" class="w-full mt-1 border rounded px-2 py-1" placeholder="默认 main" value="main" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Manifest 路径</span>
+          <input id="ghFile" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：gallery.json" value="gallery.json" />
+        </label>
+        <label class="block sm:col-span-2">
+          <span class="text-sm text-gray-600">GitHub Token（PAT，写入权限）</span>
+          <input id="ghToken" type="password" class="w-full mt-1 border rounded px-2 py-1" placeholder="只在本机输入，不要提交到仓库" />
+          <div class="flex items-center gap-3 mt-2">
+            <label class="inline-flex items-center gap-2 text-sm">
+              <input id="rememberToken" type="checkbox" class="scale-110" />
+              <span>记住 Token（仅保存在本机 localStorage）</span>
+            </label>
+            <button id="clearTokenBtn" class="text-xs text-gray-500 underline">清除已保存 Token</button>
+          </div>
+        </label>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button id="modalSaveCfgBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg">保存设置</button>
+        <button onclick="closeSettingsModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg border">关闭</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">
+        提示：先在仓库创建 <code>gallery.json</code>，内容为 <code>[]</code>。页面会使用 GitHub API 读取最新内容（优于 raw.githubusercontent）。
+      </p>
     </div>
+  </div>
    
-    <!-- 图片放大模态框 -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
-        <div class="relative max-w-4xl w-full max-h-full">
-            <div class="bg-transparent rounded-lg overflow-hidden">
-                <img id="modalImage" src="" alt="放大图片" class="w-full h-auto max-h-screen object-contain mx-auto">
-                <button onclick="closeImageModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
-                    <i class="fa fa-times text-xl"></i>
-                </button>
-            </div>
-        </div>
+  <!-- 图片放大模态框 -->
+  <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
+    <div class="relative max-w-4xl w-full max-h-full">
+      <div class="bg-transparent rounded-lg overflow-hidden">
+        <img id="modalImage" src="" alt="放大图片" class="w-full h-auto max-h-screen object-contain mx-auto">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
     </div>
-    <!-- 引入外部JavaScript文件 -->
-    <script src="script.js"></script>
+  </div>
+   
+  <!-- 生活相册 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+     <!-- 标题和操作区 -->
+     <div class="flex justify-between items-center mb-6">
+       <h2 class="text-2xl font-semibold text-pink-700">我们的相册 📸</h2>
+       <div class="flex gap-2">
+         <button id="refreshGalleryBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg flex items-center gap-2 hover:bg-pink-600 transition-colors">
+           <i class="fa fa-refresh"></i> 刷新相册
+         </button>
+         <button id="manageGalleryBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors">
+           <i class="fa fa-cog"></i> 管理
+         </button>
+       </div>
+     </div>
+
+     <!-- 上传卡片 -->
+     <div class="bg-pink-50 rounded-xl p-5 mb-6 border border-pink-200">
+       <h3 class="font-semibold text-pink-800 mb-3 text-lg">捕捉美好瞬间</h3>
+       <p class="text-sm text-pink-600 mb-4">上传图片到 Cloudinary 并保存到 GitHub</p>
+       
+       <div class="flex flex-col sm:flex-row gap-4 items-start">
+         <div class="flex-1">
+           <label class="block text-sm font-medium text-gray-700 mb-2">选择图片</label>
+           <div class="flex items-center gap-3">
+             <label for="fileInput" class="cursor-pointer bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded-lg hover:bg-pink-50 transition-colors">
+               <i class="fa fa-cloud-upload mr-2"></i>选择文件
+             </label>
+             <span id="fileName" class="text-sm text-gray-500">未选择任何文件</span>
+             <input id="fileInput" type="file" accept="image/*" multiple class="hidden">
+           </div>
+         </div>
+         
+         <button id="uploadBtn" class="px-5 py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors flex items-center gap-2">
+           <i class="fa fa-paper-plane"></i> 上传图片
+         </button>
+       </div>
+       
+       <p id="msg" class="text-sm mt-3 text-pink-600"></p>
+      </div>
+
+     <!-- 在相册网格上方添加删除按钮（仅在管理模式下显示） -->
+     <div id="deleteSelectedContainer" class="hidden mb-4">
+       <button id="deleteSelectedBtn" class="px-4 py-2 bg-gray-400 text-white rounded-lg flex items-center gap-2 cursor-not-allowed" disabled>
+         <i class="fa fa-trash"></i> 删除选中
+       </button>
+     </div>
+     
+     <!-- 相册网格 -->
+     <div class="mb-4">
+       <h3 class="text-lg font-semibold text-gray-700 mb-3">我们的回忆</h3>
+     </div>
+     
+     <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+       <!-- 图片将通过JS动态添加 -->
+     </div>
+   </div>
+
+  <!-- 引入外部JavaScript文件 -->
+  <script>
+    // ========== 原有功能代码 ==========
+    // 在文件顶部添加
+    let isManageMode = false;
+    let selectedImages = [];
+
+    let currentAvatarId = null;
+    // 默认头像路径
+    const defaultAvatars = {
+      avatar1: "images/qinbaotai.png",
+      avatar2: "images/yanxuran.png"
+    };
+    // 默认恋爱起始时间
+    const DEFAULT_LOVE_DATE = "2024-02-26T00:00:00+08:00";
+    // 保存原始日期值，用于取消时恢复
+    let originalLoveDate = "";
+
+    // 打开弹窗
+    function openModal(modalId, avatarId = null) {
+      if (modalId === 'avatarModal' && avatarId) {
+        currentAvatarId = avatarId;
+      }
+      if (modalId === 'loveDateModal') {
+        // 保存原始值
+        originalLoveDate = getLoveDate().substring(0, 10);
+        document.getElementById('loveDateInModal').value = originalLoveDate;
+      }
+      document.getElementById(modalId).classList.remove("hidden");
+      
+      // 如果是 loveDateModal，阻止事件冒泡
+      if (modalId === 'loveDateModal') {
+        return false;
+      }
+    }
+
+    // 关闭弹窗
+    function closeModal(modalId) {
+      if (modalId === 'loveDateModal') {
+        // 恢复原始值
+        document.getElementById('loveDateInModal').value = originalLoveDate;
+      }
+      document.getElementById(modalId).classList.add("hidden");
+      if (modalId === 'avatarModal') {
+        currentAvatarId = null;
+        document.getElementById("avatarFileInput").value = "";
+      }
+    }
+
+    // 头像上传和保存
+    document.getElementById("avatarFileInput").addEventListener("change", function (event) {
+      if (event.target.files && event.target.files[0] && currentAvatarId) {
+        let reader = new FileReader();
+        reader.onload = function (e) {
+          document.getElementById(currentAvatarId).src = e.target.result;
+          localStorage.setItem(currentAvatarId, e.target.result);
+        };
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    });
+
+    // 恢复默认头像
+    function resetAvatar() {
+      if (currentAvatarId) {
+        localStorage.removeItem(currentAvatarId);
+        document.getElementById(currentAvatarId).src = defaultAvatars[currentAvatarId];
+      }
+      closeModal('avatarModal');
+    }
+
+    // 初始化头像
+    ['avatar1','avatar2'].forEach(id => {
+      const saved = localStorage.getItem(id);
+      if (saved) {
+        document.getElementById(id).src = saved;
+      } else {
+        document.getElementById(id).src = defaultAvatars[id];
+      }
+    });
+
+    // 个人信息表格
+    const PERSONAL_INFO_KEY = 'personalInfoTable_v1';
+    const fallbackPersonalInfo = [
+      { project: "年龄", ta: "22", me: "23" },
+      { project: "爱好", ta: "运动", me: "睡觉" },
+      { project: "游戏", ta: "王者", me: "蛋仔" }
+    ];
+
+    function createInfoRow(project = '', ta = '', me = '') {
+      const tr = document.createElement('tr');
+      const tdProj = document.createElement('td');
+      tdProj.className = 'border p-2';
+      const inpProj = document.createElement('input');
+      inpProj.type = 'text';
+      inpProj.placeholder = '项目';
+      inpProj.className = 'w-full p-1 border rounded project-input';
+      inpProj.value = project;
+      tdProj.appendChild(inpProj);
+
+      const tdTa = document.createElement('td');
+      tdTa.className = 'border p-2';
+      const inpTa = document.createElement('input');
+      inpTa.type = 'text';
+      inpTa.placeholder = '老公 💙';
+      inpTa.className = 'w-full p-1 border rounded ta-input';
+      inpTa.value = ta;
+      tdTa.appendChild(inpTa);
+
+      const tdMe = document.createElement('td');
+      tdMe.className = 'border p-2 flex items-center gap-2';
+      const inpMe = document.createElement('input');
+      inpMe.type = 'text';
+      inpMe.placeholder = '老婆 💖';
+      inpMe.className = 'w-full p-1 border rounded me-input';
+      inpMe.value = me;
+      tdMe.appendChild(inpMe);
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'ml-2 px-2 py-1 bg-red-400 text-white rounded text-sm';
+      delBtn.textContent = '删';
+      delBtn.onclick = () => { tr.remove(); };
+      tdMe.appendChild(delBtn);
+
+      tr.appendChild(tdProj);
+      tr.appendChild(tdTa);
+      tr.appendChild(tdMe);
+      return tr;
+    }
+
+    function addInfoRow() {
+      const tbody = document.getElementById('infoTableBody');
+      tbody.appendChild(createInfoRow());
+    }
+
+    function saveTableInfo() {
+      const rows = document.querySelectorAll('#infoTableBody tr');
+      const data = [];
+      rows.forEach(row => {
+        const project = row.querySelector('.project-input')?.value || '';
+        const ta = row.querySelector('.ta-input')?.value || '';
+        const me = row.querySelector('.me-input')?.value || '';
+        if (project.trim() === '' && ta.trim() === '' && me.trim() === '') return;
+        data.push({ project, ta, me });
+      });
+      localStorage.setItem(PERSONAL_INFO_KEY, JSON.stringify(data));
+      showNotification('已保存 ✅');
+    }
+
+    function loadTableInfo() {
+      const tbody = document.getElementById('infoTableBody');
+      tbody.innerHTML = '';
+      const saved = localStorage.getItem(PERSONAL_INFO_KEY);
+
+      if (saved) {
+        try {
+          const arr = JSON.parse(saved);
+          if (Array.isArray(arr) && arr.length > 0) {
+            arr.forEach(r => tbody.appendChild(createInfoRow(r.project, r.ta, r.me)));
+            return;
+          }
+        } catch (e) {
+          console.warn("解析 localStorage 失败：", e);
+        }
+      }
+
+      const defaultInfo = (window.defaultPersonalInfo && Array.isArray(window.defaultPersonalInfo))
+        ? window.defaultPersonalInfo
+        : fallbackPersonalInfo;
+
+      defaultInfo.forEach(r => tbody.appendChild(createInfoRow(r.project, r.ta, r.me)));
+    }
+
+    // 相爱时长功能（修复显示问题）
+    function getLoveDate() {
+      return localStorage.getItem("loveDate") || DEFAULT_LOVE_DATE;
+    }
+
+    function saveLoveDateFromModal() {
+      const inputDate = document.getElementById('loveDateInModal').value;
+      if (inputDate) {
+        const finalDate = `${inputDate}T00:00:00+08:00`;
+        localStorage.setItem("loveDate", finalDate);
+        calcLoveTime();
+        closeModal('loveDateModal');
+        showNotification('时间已更新 ❤️');
+      }
+    }
+
+    // 重置输入框为默认日期，但不保存
+    function resetLoveDateInput() {
+      document.getElementById('loveDateInModal').value = DEFAULT_LOVE_DATE.substring(0, 10);
+    }
+
+    // 核心修复：确保时间计算并正确显示
+    function calcLoveTime() {
+      const start = new Date(getLoveDate());
+      const now = new Date();
+      let diff = Math.floor((now - start) / 1000);
+      if (diff < 0) diff = 0;
+
+      const years = Math.floor(diff / (365 * 24 * 3600));
+      diff %= (365 * 24 * 3600);
+      const months = Math.floor(diff / (30 * 24 * 3600));
+      diff %= (30 * 24 * 3600);
+      const days = Math.floor(diff / (24 * 3600));
+      diff %= (24 * 3600);
+      const hours = Math.floor(diff / 3600);
+      diff %= 3600;
+      const minutes = Math.floor(diff / 60);
+      const seconds = diff % 60;
+
+      // 确保时间文本被正确设置到DOM
+      const loveDaysElement = document.getElementById("loveDays");
+      if (loveDaysElement) {
+        loveDaysElement.innerText =
+          `我们已经在一起 ${years}年 ${months}月 ${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒 ❤️`;
+      }
+    }
+
+    // 显示通知
+    function showNotification(message) {
+      const notice = document.createElement('div');
+      notice.textContent = message;
+      notice.className = 'fixed right-6 bottom-6 bg-black text-white px-3 py-2 rounded shadow z-50';
+      document.body.appendChild(notice);
+      setTimeout(() => notice.remove(), 1500);
+    }
+
+    // ========== Cloudinary + GitHub 相册功能 ==========
+    // 小工具
+    const C = {
+      cloudName: 'cloudName', uploadPreset: 'uploadPreset',
+      ghOwner: 'ghOwner', ghRepo: 'ghRepo', ghBranch: 'ghBranch',
+      ghFile: 'ghFile', ghTokenSaved: 'ghTokenSaved'
+    };
+    const $ = s => document.querySelector(s);
+    const msg = t => { $('#msg').textContent = t || ''; };
+
+    // 添加本地缓存机制
+    const GALLERY_CACHE_KEY = 'gallery_cache';
+    const GALLERY_CACHE_TIMESTAMP = 'gallery_cache_timestamp';
+    const CACHE_EXPIRY = 5 * 60 * 1000; // 5分钟缓存
+
+    function loadCfgToForm() {
+      $('#cloudName').value = localStorage.getItem(C.cloudName) || 'dbqhemrnw';
+      $('#uploadPreset').value = localStorage.getItem(C.uploadPreset) || 'unsigned_preset';
+      $('#ghOwner').value = localStorage.getItem(C.ghOwner) || 'Qin-kings';
+      $('#ghRepo').value = localStorage.getItem(C.ghRepo) || 'love';
+      $('#ghBranch').value = localStorage.getItem(C.ghBranch) || 'main';
+      $('#ghFile').value = localStorage.getItem(C.ghFile) || 'gallery.json';
+      const t = localStorage.getItem(C.ghTokenSaved) || '';
+      if (t) { $('#ghToken').value = t; $('#rememberToken').checked = true; }
+    }
+
+    function saveFormToCfg() {
+      localStorage.setItem(C.cloudName, $('#cloudName').value.trim());
+      localStorage.setItem(C.uploadPreset, $('#uploadPreset').value.trim());
+      localStorage.setItem(C.ghOwner, $('#ghOwner').value.trim());
+      localStorage.setItem(C.ghRepo, $('#ghRepo').value.trim());
+      localStorage.setItem(C.ghBranch, $('#ghBranch').value.trim() || 'main');
+      localStorage.setItem(C.ghFile, $('#ghFile').value.trim() || 'gallery.json');
+      const t = $('#ghToken').value.trim();
+      if ($('#rememberToken').checked && t) localStorage.setItem(C.ghTokenSaved, t);
+      if (!$('#rememberToken').checked) localStorage.removeItem(C.ghTokenSaved);
+      msg('设置已保存 ✅');
+      showNotification('相册设置已保存 ✅');
+    }
+
+    function getCfg() {
+      return {
+        cloudName: $('#cloudName').value.trim(),
+        uploadPreset: $('#uploadPreset').value.trim(),
+        ghOwner: $('#ghOwner').value.trim(),
+        ghRepo: $('#ghRepo').value.trim(),
+        ghBranch: $('#ghBranch').value.trim() || 'main',
+        ghFile: $('#ghFile').value.trim() || 'gallery.json',
+        ghToken: $('#ghToken').value.trim() || localStorage.getItem(C.ghTokenSaved) || ''
+      };
+    }
+
+    // 修改 readManifestViaAPI 函数
+    async function readManifestViaAPI() {
+      const { ghOwner, ghRepo, ghFile, ghBranch, ghToken } = getCfg();
+      const url = `https://api.github.com/repos/${ghOwner}/${ghRepo}/contents/${encodeURIComponent(ghFile)}?ref=${encodeURIComponent(ghBranch)}`;
+      
+      const headers = { 'Accept': 'application/vnd.github+json' };
+      if (ghToken) {
+        headers['Authorization'] = `Bearer ${ghToken}`;
+      }
+      
+      const res = await fetch(url, { headers });
+      if (res.status === 404) return { list: [], sha: null };
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.message || ('HTTP ' + res.status));
+      let list = [];
+      try { list = JSON.parse(atob(j.content || '')) || []; } catch (e) { list = []; }
+      return { list, sha: j.sha || null };
+    }
+
+    // 兼容回退：直接读 raw（带时间戳避免 CDN 缓存）
+    async function readManifestViaRaw() {
+      const { ghOwner, ghRepo, ghFile, ghBranch } = getCfg();
+      const url = `https://raw.githubusercontent.com/${ghOwner}/${ghRepo}/${ghBranch}/${ghFile}?t=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error('raw fetch failed: ' + res.status);
+      return await res.json();
+    }
+
+    // 修改 fetchManifest 函数，添加更好的错误处理和缓存机制
+    async function fetchManifest() {
+      // 检查缓存是否有效
+      const cachedData = localStorage.getItem(GALLERY_CACHE_KEY);
+      const cacheTimestamp = localStorage.getItem(GALLERY_CACHE_TIMESTAMP);
+      
+      if (cachedData && cacheTimestamp && (Date.now() - parseInt(cacheTimestamp)) < CACHE_EXPIRY) {
+        try {
+          return { list: JSON.parse(cachedData), sha: null, fromCache: true };
+        } catch (e) {
+          console.warn('缓存数据解析失败，重新获取');
+        }
+      }
+      
+      // 优先尝试 GitHub API（通常比 raw 更"新鲜"）
+      try {
+        const r = await readManifestViaAPI();
+        // 更新缓存
+        localStorage.setItem(GALLERY_CACHE_KEY, JSON.stringify(r.list));
+        localStorage.setItem(GALLERY_CACHE_TIMESTAMP, Date.now().toString());
+        return { ...r, fromCache: false };
+      } catch (e) {
+        console.warn('GitHub API 读取失败，回退到 raw：', e);
+        try {
+          const list = await readManifestViaRaw();
+          // 更新缓存
+          localStorage.setItem(GALLERY_CACHE_KEY, JSON.stringify(list));
+          localStorage.setItem(GALLERY_CACHE_TIMESTAMP, Date.now().toString());
+          return { list, sha: null, fromCache: false };
+        } catch (rawError) {
+          console.error('Raw fetch also failed:', rawError);
+          // 如果两者都失败，尝试使用缓存（即使过期）
+          if (cachedData) {
+            try {
+              const list = JSON.parse(cachedData);
+              return { list, sha: null, fromCache: true, cacheExpired: true };
+            } catch (e) {
+              // 忽略错误，返回空列表
+            }
+          }
+          // 如果两者都失败，返回空列表
+          return { list: [], sha: null, fromCache: false };
+        }
+      }
+    }
+
+    // 清除缓存
+    function clearGalleryCache() {
+      localStorage.removeItem(GALLERY_CACHE_KEY);
+      localStorage.removeItem(GALLERY_CACHE_TIMESTAMP);
+    }
+
+    // 替换现有的 renderGallery 函数
+    async function renderGallery() {
+      try {
+        // 每次渲染相册时，重置选择状态
+        selectedImages = [];
+        updateDeleteButtonState();
+        
+        const { list, fromCache, cacheExpired } = await fetchManifest();
+        const container = $('#gallery');
+        container.innerHTML = '';
+
+        if (!list || list.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full text-center py-8 text-gray-500">
+              <i class="fa fa-camera text-4xl mb-3"></i>
+              <p>还没有照片，上传第一张照片吧！</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // 显示缓存状态提示（如果是缓存数据且已过期）
+        if (cacheExpired) {
+          msg('网络连接问题，显示的是缓存数据（可能不是最新）');
+        } else if (fromCache) {
+          msg('显示缓存数据，点击刷新获取最新');
+        }
+        
+        (list || []).slice().sort((a,b)=> (b.ts||0)-(a.ts||0)).forEach((item, idx) => {
+          const div = document.createElement('div');
+          div.className = 'relative cursor-pointer group gallery-item';
+          div.setAttribute('data-src', item.src);
+          
+          const img = document.createElement('img');
+          img.src = item.src;
+          img.alt = item.alt || `照片 ${idx+1}`;
+          img.className = 'w-full h-40 object-cover rounded-lg shadow transition-transform duration-300 group-hover:scale-105';
+          img.loading = 'lazy';
+          
+          // 添加悬停效果
+          const overlay = document.createElement('div');
+          overlay.className = 'absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-all duration-300 flex items-center justify-center';
+          
+          const eyeIcon = document.createElement('i');
+          eyeIcon.className = 'fa fa-eye text-white text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300';
+          
+          overlay.appendChild(eyeIcon);
+          
+          // 添加选择框（仅在管理模式下显示）
+          const checkboxContainer = document.createElement('div');
+          checkboxContainer.className = `absolute bottom-2 left-2 ${isManageMode ? '' : 'hidden'}`;
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'image-checkbox w-5 h-5';
+          checkbox.value = item.src;
+          checkbox.addEventListener('change', function() {
+            if (this.checked) {
+              selectedImages.push(this.value);
+              this.parentElement.parentElement.classList.add('selected');
+            } else {
+              selectedImages = selectedImages.filter(src => src !== this.value);
+              this.parentElement.parentElement.classList.remove('selected');
+            }
+            updateDeleteButtonState();
+          });
+          checkboxContainer.appendChild(checkbox);
+          
+          div.appendChild(img);
+          div.appendChild(overlay);
+          div.appendChild(checkboxContainer);
+          container.appendChild(div);
+        });
+        
+        // 添加事件委托处理点击
+        addGalleryClickHandlers();
+        msg('');
+      } catch (e) {
+        console.error('renderGallery error', e);
+        const container = $('#gallery');
+        container.innerHTML = `
+          <div class="col-span-full text-center py-8 text-red-500">
+            <i class="fa fa-exclamation-triangle text-4xl mb-3"></i>
+            <p>加载相册失败：${e.message || e}</p>
+            <button onclick="renderGallery()" class="mt-3 px-4 py-2 bg-pink-500 text-white rounded">
+              重试
+            </button>
+          </div>
+        `;
+        msg('加载相册失败：' + (e.message || e));
+      }
+    }
+
+    // 添加事件委托处理函数
+    function addGalleryClickHandlers() {
+      const gallery = document.getElementById('gallery');
+      if (!gallery) return;
+      
+      // 移除旧的事件监听器（避免重复绑定）
+      gallery.removeEventListener('click', handleGalleryClick);
+      
+      // 添加新的事件监听器
+      gallery.addEventListener('click', handleGalleryClick);
+    }
+
+    // 处理画廊点击事件
+    function handleGalleryClick(e) {
+      // 如果在管理模式下，不打开图片
+      if (isManageMode) return;
+      // 查找被点击的图片容器
+      const item = e.target.closest('[data-src]');
+      if (item) {
+        const src = item.getAttribute('data-src');
+        if (src) {
+          console.log('点击图片，URL:', src);
+          openImageModal(src);
+        }
+      }
+    }
+
+    // Cloudinary 上传
+    async function uploadToCloudinary(file) {
+      const { cloudName, uploadPreset } = getCfg();
+      if (!cloudName || !uploadPreset) throw new Error('请先填写 Cloudinary cloudName 与 unsigned preset（设置面板）');
+      const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', uploadPreset);
+      const res = await fetch(endpoint, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.secure_url) {
+        console.error('Cloudinary 返回：', data);
+        throw new Error('Cloudinary 上传失败：' + (data.error?.message || res.status));
+      }
+      return data.secure_url;
+    }
+
+    // GitHub 写入 manifest（创建或更新）
+    async function writeManifest(list, sha, message) {
+      const { ghOwner, ghRepo, ghFile, ghBranch, ghToken } = getCfg();
+      if (!ghToken) throw new Error('请在设置里输入 GitHub Token（仅本机）');
+      const apiUrl = `https://api.github.com/repos/${ghOwner}/${ghRepo}/contents/${encodeURIComponent(ghFile)}`;
+
+      const body = {
+        message: message || 'update gallery',
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(list, null, 2)))),
+        branch: ghBranch
+      };
+      if (sha) body.sha = sha; // 更新已有文件
+      const res = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Accept': 'application/vnd.github+json',
+          'Authorization': `Bearer ${ghToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        console.error('writeManifest error', res.status, text);
+        throw new Error('写入 gallery.json 失败：' + text);
+      }
+      return JSON.parse(text);
+    }
+
+    // 写入后等待生效（轮询检测最新 manifest 包含新 URL）
+    async function waitForManifestToContain(expectedUrls, {attempts=8, delayMs=900} = {}) {
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const { list } = await fetchManifest();
+          const srcs = (list || []).map(it => it.src);
+          const allPresent = expectedUrls.every(u => srcs.includes(u));
+          if (allPresent) return true;
+        } catch (e) {
+          // ignore and retry
+          console.warn('waitForManifest .. fetch failed', e);
+        }
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+      return false;
+    }
+
+    // 上传入口：Cloudinary -> 写 GitHub -> 等待生效 -> 刷新
+    async function startUpload() {
+      if (!checkRequiredSettings()) return;
+      try {
+        msg('上传中…');
+        const files = Array.from($('#fileInput').files || []);
+        if (files.length === 0) { msg('请选择图片'); return; }
+
+        // 读取当前 manifest（可能为空）
+        const { list, sha } = await fetchManifest();
+        const addedUrls = [];
+
+        // 逐个上传 Cloudinary
+        for (const f of files) {
+          const url = await uploadToCloudinary(f);
+          const item = { src: url, alt: f.name, who: '我们', ts: Date.now() };
+          list.push(item);
+          addedUrls.push(url);
+        }
+
+        // 乐观更新：立即更新界面
+        clearGalleryCache(); // 清除缓存，强制下次重新获取
+        await renderGallery(); // 立即重新渲染
+
+        // 异步写回 GitHub（不阻塞界面）
+        writeManifest(list, sha, `add ${files.length} photo(s)`)
+          .then(async () => {
+            // 写入成功，清除缓存并重新获取最新数据
+            clearGalleryCache();
+            await renderGallery();
+            msg('上传完成 ✅');
+            showNotification('照片上传完成 ✅');
+          })
+          .catch(e => {
+            console.error('GitHub写入失败:', e);
+            msg('上传完成，但GitHub同步失败: ' + (e.message || e));
+            showNotification('照片已上传，但GitHub同步失败 ❌');
+          });
+
+        $('#fileInput').value = '';
+        document.getElementById('fileName').textContent = "未选择任何文件";
+        
+      } catch (e) {
+        console.error('startUpload error', e);
+        alert('上传失败：' + (e.message || e));
+        msg('上传失败：' + (e.message || e));
+        showNotification('上传失败：' + (e.message || e));
+      }
+    }
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTableInfo();
+      loadCfgToForm();
+      renderGallery();
+      // 文件选择时显示文件名
+      document.getElementById('fileInput').addEventListener('change', function(e) {
+        const fileName = document.getElementById('fileName');
+        if (this.files.length > 0) {
+          if (this.files.length === 1) {
+            fileName.textContent = this.files[0].name;
+          } else {
+            fileName.textContent = `${this.files.length}个文件已选择`;
+          }
+        } else {
+          fileName.textContent = "未选择任何文件";
+        }
+      });
+      
+      // 初始化并启动计时器更新恋爱时长
+      const startDate = getLoveDate();
+      calcLoveTime(); // 立即计算一次
+      setInterval(calcLoveTime, 1000); // 每秒更新一次
+    });
+
+    // 事件绑定
+    $('#uploadBtn').addEventListener('click', startUpload);
+    $('#clearTokenBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem(C.ghTokenSaved);
+      $('#ghToken').value = '';
+      $('#rememberToken').checked = false;
+      msg('已清除本机保存的 Token');
+      showNotification('已清除本机保存的 Token');
+    });
+    // 设置浮层相关函数
+    function openSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    // 事件监听
+    document.getElementById('settingsBtn').addEventListener('click', openSettingsModal);
+    document.getElementById('modalSaveCfgBtn').addEventListener('click', saveFormToCfg);
+    document.getElementById('refreshGalleryBtn').addEventListener('click', renderGallery);
+
+    // 图片放大功能
+    function openImageModal(src) {
+      const modal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+     
+      console.log('打开图片模态框，尝试加载图片:', src);
+     
+      // 确保URL有效
+      if (!src || typeof src !== 'string') {
+        console.error('无效的图片URL:', src);
+        return;
+      }
+     
+      // 添加加载事件监听器
+      modalImage.onload = function() {
+        console.log('图片加载成功');
+      };
+     
+      modalImage.onerror = function() {
+        console.error('图片加载失败，URL:', src);
+        // 可以设置一个默认错误图片
+        modalImage.alt = '图片加载失败';
+      };
+     
+      modalImage.src = src;
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // 防止背景滚动
+    }
+
+    function closeImageModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = ''; // 恢复背景滚动
+    }
+
+    // 点击模态框背景关闭
+    document.getElementById('imageModal').addEventListener('click', (e) => {
+      if (e.target.id === 'imageModal') {
+        closeImageModal();
+      }
+    });
+
+    // ESC键关闭
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !document.getElementById('imageModal').classList.contains('hidden')) {
+        closeImageModal();
+      }
+    });
+
+    // 切换管理模式
+    function toggleManageMode() {
+      isManageMode = !isManageMode;
+      
+      const manageBtn = document.getElementById('manageGalleryBtn');
+      const deleteContainer = document.getElementById('deleteSelectedContainer');
+      
+      if (isManageMode) {
+        manageBtn.innerHTML = '<i class="fa fa-times"></i> 取消管理';
+        manageBtn.classList.remove('bg-blue-500');
+        manageBtn.classList.add('bg-gray-500');
+        deleteContainer.classList.remove('hidden');
+        
+        // 显示所有选择框
+        document.querySelectorAll('.image-checkbox').forEach(checkbox => {
+          checkbox.parentElement.classList.remove('hidden');
+        });
+      } else {
+        manageBtn.innerHTML = '<i class="fa fa-cog"></i> 管理';
+        manageBtn.classList.remove('bg-gray-500');
+        manageBtn.classList.add('bg-blue-500');
+        deleteContainer.classList.add('hidden');
+        
+        // 退出管理模式时，清除所有选择状态
+        selectedImages = [];
+        
+        // 取消所有选择框的选中状态
+        document.querySelectorAll('.image-checkbox').forEach(checkbox => {
+          checkbox.checked = false;
+          checkbox.parentElement.parentElement.classList.remove('selected');
+        });
+        
+        // 隐藏所有选择框
+        document.querySelectorAll('.image-checkbox').forEach(checkbox => {
+          checkbox.parentElement.classList.add('hidden');
+        });
+        
+        // 更新删除按钮状态
+        updateDeleteButtonState();
+      }
+    }
+
+    // 更新删除按钮状态
+    function updateDeleteButtonState() {
+      const deleteBtn = document.getElementById('deleteSelectedBtn');
+      if (selectedImages.length > 0) {
+        deleteBtn.disabled = false;
+        deleteBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+        deleteBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+        deleteBtn.innerHTML = `<i class="fa fa-trash"></i> 删除选中 (${selectedImages.length})`;
+      } else {
+        deleteBtn.disabled = true;
+        deleteBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+        deleteBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+        deleteBtn.innerHTML = '<i class="fa fa-trash"></i> 删除选中';
+      }
+    }
+
+    // 删除选中的图片
+    async function deleteSelectedImages() {
+      if (selectedImages.length === 0) return;
+      
+      if (!confirm(`确定要删除选中的 ${selectedImages.length} 张照片吗？此操作不可撤销。`)) {
+        return;
+      }
+      
+      try {
+        msg('删除中...');
+        
+        // 获取当前manifest
+        const { list, sha } = await fetchManifest();
+        
+        // 从列表中移除选中的图片
+        const updatedList = list.filter(item => !selectedImages.includes(item.src));
+        
+        // 乐观更新：立即更新界面
+        clearGalleryCache(); // 清除缓存
+        await renderGallery(); // 立即重新渲染
+        
+        // 异步写回 GitHub（不阻塞界面）
+        writeManifest(updatedList, sha, `删除 ${selectedImages.length} 张照片`)
+          .then(async () => {
+            // 写入成功，清除缓存并重新获取最新数据
+            clearGalleryCache();
+            await renderGallery();
+            msg('照片已删除 ✅');
+            showNotification(`已删除 ${selectedImages.length} 张照片 ✅`);
+          })
+          .catch(e => {
+            console.error('GitHub删除失败:', e);
+            msg('删除完成，但GitHub同步失败: ' + (e.message || e));
+            showNotification('照片已删除，但GitHub同步失败 ❌');
+          });
+        
+        // 退出管理模式
+        isManageMode = false;
+        const manageBtn = document.getElementById('manageGalleryBtn');
+        manageBtn.innerHTML = '<i class="fa fa-cog"></i> 管理';
+        manageBtn.classList.remove('bg-gray-500');
+        manageBtn.classList.add('bg-blue-500');
+        document.getElementById('deleteSelectedContainer').classList.add('hidden');
+        
+      } catch (e) {
+        console.error('deleteSelectedImages error', e);
+        alert('删除失败：' + (e.message || e));
+        msg('删除失败：' + (e.message || e));
+        showNotification('删除失败：' + (e.message || e));
+      }
+    }
+
+    // 添加等待manifest不包含特定URL的函数
+    async function waitForManifestToNotContain(unwantedUrls, {attempts=8, delayMs=900} = {}) {
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const { list } = await fetchManifest();
+          const srcs = (list || []).map(it => it.src);
+          const nonePresent = unwantedUrls.every(u => !srcs.includes(u));
+          if (nonePresent) return true;
+        } catch (e) {
+          console.warn('waitForManifestToNotContain fetch failed', e);
+        }
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+      return false;
+    }
+
+    // 添加一个函数来检查必要的设置
+    function checkRequiredSettings() {
+      const { cloudName, uploadPreset, ghOwner, ghRepo, ghToken } = getCfg();
+      const errors = [];
+      
+      if (!cloudName) errors.push('Cloudinary Cloud Name');
+      if (!uploadPreset) errors.push('Cloudinary Upload Preset');
+      if (!ghOwner) errors.push('GitHub Owner');
+      if (!ghRepo) errors.push('GitHub Repo');
+      if (!ghToken) errors.push('GitHub Token');
+      
+      if (errors.length > 0) {
+        alert(`请先完成以下设置：\n${errors.join('\n')}\n\n点击右上角的设置按钮进行配置。`);
+        openSettingsModal();
+        return false;
+      }
+      
+      return true;
+    }
+
+    // 确保在页面加载时初始化事件处理
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTableInfo();
+      loadCfgToForm();
+      renderGallery();
+      
+      // 添加管理按钮事件监听
+      document.getElementById('manageGalleryBtn').addEventListener('click', toggleManageMode);
+      document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelectedImages);
+      // 添加刷新按钮事件监听
+      document.getElementById('refreshGalleryBtn').addEventListener('click', renderGallery);
+      // 文件选择时显示文件名
+      document.getElementById('fileInput').addEventListener('change', function(e) {
+        const fileName = document.getElementById('fileName');
+        if (this.files.length > 0) {
+          if (this.files.length === 1) {
+            fileName.textContent = this.files[0].name;
+          } else {
+            fileName.textContent = `${this.files.length}个文件已选择`;
+          }
+        } else {
+          fileName.textContent = "未选择任何文件";
+        }
+      });
+
+      // 初始化并启动计时器更新恋爱时长
+      const startDate = getLoveDate();
+      calcLoveTime(); // 立即计算一次
+      setInterval(calcLoveTime, 1000); // 每秒更新一次
+      
+      // 初始添加事件处理
+      addGalleryClickHandlers();
+    });
+  </script>
 </body>
 </html>
-
-
-
