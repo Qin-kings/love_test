@@ -1,236 +1,224 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-   <meta charset="UTF-8">
-   <title>情侣小站 ❤️</title>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <style>
-      .love-time-hover:hover {
-        background-color: #fce7f3 !important; /* 更深的粉色 */
-      }
-   </style>
-   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情侣小站 - 优化版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        .love-time-hover:hover {
+            background-color: #fce7f3 !important;
+        }
+        .gallery-item {
+            transition: all 0.3s ease;
+        }
+        .gallery-item:hover {
+            transform: scale(1.03);
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .progress-bar {
+            height: 4px;
+            width: 0%;
+            background-color: #ec4899;
+            transition: width 0.3s ease;
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-r from-pink-200 via-pink-300 to-pink-400 min-h-screen flex flex-col items-center p-6">
-  <!-- 设置按钮 -->
-  <button id="settingsBtn" class="fixed top-4 right-4 z-50 bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600 transition-all">
-    <i class="fa fa-cog text-xl"></i>
-  </button>
-  <h1 class="text-4xl font-bold text-white mb-6">我们的情侣小站 💕</h1>
+    <!-- 设置按钮 -->
+    <button id="settingsBtn" class="fixed top-4 right-4 z-50 bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600 transition-all">
+        <i class="fa fa-cog text-xl"></i>
+    </button>
+    
+    <h1 class="text-4xl font-bold text-white mb-6">我们的情侣小站 💕</h1>
 
-  <!-- 头像区域 -->
-  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6 relative">
-      <h2 class="text-xl font-semibold mb-4 text-center">我们的头像</h2>
-    <div class="relative w-full flex justify-between">
-      <!-- 左边头像 -->
-      <div class="flex flex-col items-center ml-[20%]">
-        <img id="avatar1"
-             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
-             src="images/qinbaotai.png"
-             alt="老公头像"
-             onclick="openModal('avatarModal', 'avatar1')">
-        <p class="text-sm text-gray-500">老公 💙</p>
-      </div>
+    <!-- 头像区域 -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6 relative">
+        <h2 class="text-xl font-semibold mb-4 text-center">我们的头像</h2>
+        <div class="relative w-full flex justify-between">
+            <!-- 左边头像 -->
+            <div class="flex flex-col items-center ml-[20%]">
+                <img id="avatar1"
+                    class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+                    src="images/qinbaotai.png"
+                    alt="老公头像"
+                    onclick="openModal('avatarModal', 'avatar1')">
+                <p class="text-sm text-gray-500">老公 💙</p>
+            </div>
 
-      <!-- 右边头像 -->
-      <div class="flex flex-col items-center mr-[20%]">
-        <img id="avatar2"
-             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
-             src="images/yanxuran.png"
-             alt="老婆头像"
-             onclick="openModal('avatarModal', 'avatar2')">
-        <p class="text-sm text-gray-500">老婆 💖</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- 头像修改弹出层 -->
-  <div id="avatarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
-      <h3 class="text-lg font-semibold mb-4">更换头像</h3>
-      <input type="file" id="avatarFileInput" accept="image/*" class="mb-3">
-      <div class="flex justify-between">
-        <button onclick="resetAvatar()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
-        <button onclick="closeModal('avatarModal')" class="px-3 py-1 bg-pink-500 text-white rounded">关闭</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 个人信息 -->
-  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
-    <h2 class="text-xl font-semibold mb-4">个人信息</h2>
-    <table id="infoTable" class="w-full border-collapse border text-center">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">项目</th>
-          <th class="border p-2">老公 💙</th>
-          <th class="border p-2">老婆 💖</th>
-        </tr>
-      </thead>
-      <tbody id="infoTableBody">
-        <!-- JS 会在加载时填充默认行或保存的数据 -->
-      </tbody>
-    </table>
-    <div class="flex gap-3 mt-4">
-      <button type="button" onclick="addInfoRow()" class="px-4 py-2 bg-green-400 text-white rounded-xl shadow">新增</button>
-      <button type="button" onclick="saveTableInfo()" class="px-4 py-2 bg-pink-400 text-white rounded-xl shadow">保存</button>
-    </div>
-  </div>
-
-  <!-- 相爱时长（修复显示问题） -->
-  <!-- 找到相爱时长的部分，修改为： -->
-  <div class="bg-pink-50 rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6"> <!-- 添加 bg-pink-50 背景色 -->
-    <h2 class="text-xl font-semibold mb-4">我们的相爱时长</h2>
-    <!-- 移除按钮，将整个区域改为可点击 -->
-    <div class="border border-pink-200 rounded p-4 text-center cursor-pointer hover:bg-pink-100 transition-colors" onclick="openModal('loveDateModal')">
-      <p id="loveDays" class="text-lg font-bold text-pink-600"></p>
-    </div>
-  </div>
-
-  <!-- 相爱时长修改弹出层 -->
-  <div id="loveDateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
-      <h3 class="text-lg font-semibold mb-4">修改相爱起始时间</h3>
-      <input type="date" id="loveDateInModal" class="border rounded p-2 mb-3 w-full">
-      <div class="flex justify-between">
-        <button onclick="resetLoveDateInput()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
-        <button onclick="saveLoveDateFromModal()" class="px-3 py-1 bg-pink-500 text-white rounded">确定</button>
-        <button onclick="closeModal('loveDateModal')" class="px-3 py-1 bg-gray-500 text-white rounded">关闭</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 设置浮层 -->
-  <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
-      <h2 class="text-xl font-semibold text-pink-700 mb-4">相册设置</h2>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div class="col-span-1 sm:col-span-2">
-          <h2 class="font-semibold text-gray-700 mb-2">Cloudinary</h2>
+            <!-- 右边头像 -->
+            <div class="flex flex-col items-center mr-[20%]">
+                <img id="avatar2"
+                    class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+                    src="images/yanxuran.png"
+                    alt="老婆头像"
+                    onclick="openModal('avatarModal', 'avatar2')">
+                <p class="text-sm text-gray-500">老婆 💖</p>
+            </div>
         </div>
-        <label class="block">
-          <span class="text-sm text-gray-600">Cloud name</span>
-          <input id="cloudName" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：abcd1234" />
-        </label>
-        <label class="block">
-          <span class="text-sm text-gray-600">Unsigned upload preset</span>
-          <input id="uploadPreset" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：unsigned_preset" />
-        </label>
+    </div>
 
-        <div class="col-span-1 sm:col-span-2 mt-2">
-          <h2 class="font-semibold text-gray-700 mb-2">GitHub</h2>
+    <!-- 个人信息 -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+        <h2 class="text-xl font-semibold mb-4">个人信息</h2>
+        <table id="infoTable" class="w-full border-collapse border text-center">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border p-2">项目</th>
+                    <th class="border p-2">老公 💙</th>
+                    <th class="border p-2">老婆 💖</th>
+                </tr>
+            </thead>
+            <tbody id="infoTableBody">
+                <!-- JS 会在加载时填充默认行或保存的数据 -->
+            </tbody>
+        </table>
+        <div class="flex gap-3 mt-4">
+            <button type="button" onclick="addInfoRow()" class="px-4 py-2 bg-green-400 text-white rounded-xl shadow">新增</button>
+            <button type="button" onclick="saveTableInfo()" class="px-4 py-2 bg-pink-400 text-white rounded-xl shadow">保存</button>
         </div>
-        <label class="block">
-          <span class="text-sm text-gray-600">Owner（用户名/组织）</span>
-          <input id="ghOwner" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：yourname" />
-        </label>
-        <label class="block">
-          <span class="text-sm text-gray-600">Repo</span>
-          <input id="ghRepo" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：love-gallery" />
-        </label>
-        <label class="block">
-          <span class="text-sm text-gray-600">Branch</span>
-          <input id="ghBranch" class="w-full mt-1 border rounded px-2 py-1" placeholder="默认 main" value="main" />
-        </label>
-        <label class="block">
-          <span class="text-sm text-gray-600">Manifest 路径</span>
-          <input id="ghFile" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：gallery.json" value="gallery.json" />
-        </label>
-        <label class="block sm:col-span-2">
-          <span class="text-sm text-gray-600">GitHub Token（PAT，写入权限）</span>
-          <input id="ghToken" type="password" class="w-full mt-1 border rounded px-2 py-1" placeholder="只在本机输入，不要提交到仓库" />
-          <div class="flex items-center gap-3 mt-2">
-            <label class="inline-flex items-center gap-2 text-sm">
-              <input id="rememberToken" type="checkbox" class="scale-110" />
-              <span>记住 Token（仅保存在本机 localStorage）</span>
-            </label>
-            <button id="clearTokenBtn" class="text-xs text-gray-500 underline">清除已保存 Token</button>
-          </div>
-        </label>
-      </div>
-
-      <div class="mt-4 flex gap-2">
-        <button id="modalSaveCfgBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg">保存设置</button>
-        <button onclick="closeSettingsModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg border">关闭</button>
-      </div>
-      <p class="text-xs text-gray-500 mt-2">
-        提示：先在仓库创建 <code>gallery.json</code>，内容为 <code>[]</code>。页面会使用 GitHub API 读取最新内容（优于 raw.githubusercontent）。
-      </p>
     </div>
-  </div>
-   
-  <!-- 图片放大模态框 -->
-  <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
-    <div class="relative max-w-4xl w-full max-h-full">
-      <div class="bg-transparent rounded-lg overflow-hidden">
-        <img id="modalImage" src="" alt="放大图片" class="w-full h-auto max-h-screen object-contain mx-auto">
-        <button onclick="closeImageModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
-          <i class="fa fa-times text-xl"></i>
-        </button>
-      </div>
+
+    <!-- 相爱时长 -->
+    <div class="bg-pink-50 rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+        <h2 class="text-xl font-semibold mb-4">我们的相爱时长</h2>
+        <div class="border border-pink-200 rounded p-4 text-center cursor-pointer hover:bg-pink-100 transition-colors" onclick="openModal('loveDateModal')">
+            <p id="loveDays" class="text-lg font-bold text-pink-600"></p>
+        </div>
     </div>
-  </div>
-   
-  <!-- 生活相册 - 替换为Cloudinary+GitHub版本 -->
-  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
-     <!-- 标题和操作区 -->
-     <div class="flex justify-between items-center mb-6">
-       <h2 class="text-2xl font-semibold text-pink-700">我们的相册 📸</h2>
-       <div class="flex gap-2">
-         <button id="refreshGalleryBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg flex items-center gap-2 hover:bg-pink-600 transition-colors">
-           <i class="fa fa-refresh"></i> 刷新相册
-         </button>
-         <button id="manageGalleryBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors">
-           <i class="fa fa-cog"></i> 管理
-         </button>
-       </div>
-     </div>
 
-     <!-- 上传卡片 -->
-     <div class="bg-pink-50 rounded-xl p-5 mb-6 border border-pink-200">
-       <h3 class="font-semibold text-pink-800 mb-3 text-lg">捕捉美好瞬间</h3>
-       <p class="text-sm text-pink-600 mb-4">上传图片到 Cloudinary 并保存到 GitHub</p>
-       
-       <div class="flex flex-col sm:flex-row gap-4 items-start">
-         <div class="flex-1">
-           <label class="block text-sm font-medium text-gray-700 mb-2">选择图片</label>
-           <div class="flex items-center gap-3">
-             <label for="fileInput" class="cursor-pointer bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded-lg hover:bg-pink-50 transition-colors">
-               <i class="fa fa-cloud-upload mr-2"></i>选择文件
-             </label>
-             <span id="fileName" class="text-sm text-gray-500">未选择任何文件</span>
-             <input id="fileInput" type="file" accept="image/*" multiple class="hidden">
-           </div>
-         </div>
-         
-         <button id="uploadBtn" class="px-5 py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors flex items-center gap-2">
-           <i class="fa fa-paper-plane"></i> 上传图片
-         </button>
-       </div>
-       
-       <p id="msg" class="text-sm mt-3 text-pink-600"></p>
-      </div>
+    <!-- 生活相册 -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+        <!-- 标题和操作区 -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-semibold text-pink-700">我们的相册 📸</h2>
+            <div class="flex gap-2">
+                <button id="refreshGalleryBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg flex items-center gap-2 hover:bg-pink-600 transition-colors">
+                    <i class="fa fa-refresh"></i> 刷新相册
+                </button>
+                <button id="manageGalleryBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors">
+                    <i class="fa fa-cog"></i> 管理
+                </button>
+            </div>
+        </div>
 
-     <!-- 相册网格 -->
-     <div class="mb-4">
-       <h3 class="text-lg font-semibold text-gray-700 mb-3">我们的回忆</h3>
-     </div>
-     
-     <!-- 在相册网格下方添加删除按钮（仅在管理模式下显示） -->
-     <!-- 修改删除按钮的初始状态 -->
-     <div id="deleteSelectedContainer" class="hidden mt-4">
-       <button id="deleteSelectedBtn" class="px-4 py-2 bg-gray-400 text-white rounded-lg flex items-center gap-2 cursor-not-allowed" disabled>
-         <i class="fa fa-trash"></i> 删除选中
-       </button>
-     </div>
-     
-     <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-       <!-- 图片将通过JS动态添加 -->
-     </div>
-   </div>
+        <!-- 上传卡片 -->
+        <div class="bg-pink-50 rounded-xl p-5 mb-6 border border-pink-200">
+            <h3 class="font-semibold text-pink-800 mb-3 text-lg">捕捉美好瞬间</h3>
+            <p class="text-sm text-pink-600 mb-4">上传图片到 Cloudinary 并保存到 GitHub</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 items-start">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">选择图片</label>
+                    <div class="flex items-center gap-3">
+                        <label for="fileInput" class="cursor-pointer bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded-lg hover:bg-pink-50 transition-colors">
+                            <i class="fa fa-cloud-upload mr-2"></i>选择文件
+                        </label>
+                        <span id="fileName" class="text-sm text-gray-500">未选择任何文件</span>
+                        <input id="fileInput" type="file" accept="image/*" multiple class="hidden">
+                    </div>
+                </div>
+                
+                <button id="uploadBtn" class="px-5 py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors flex items-center gap-2">
+                    <i class="fa fa-paper-plane"></i> 上传图片
+                </button>
+            </div>
+            
+            <!-- 上传进度条 -->
+            <div class="mt-4 hidden" id="uploadProgressContainer">
+                <div class="flex justify-between text-sm text-pink-700 mb-1">
+                    <span>上传中...</span>
+                    <span id="uploadProgressText">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="uploadProgressBar" class="progress-bar h-2 rounded-full"></div>
+                </div>
+            </div>
+            
+            <p id="msg" class="text-sm mt-3 text-pink-600"></p>
+        </div>
 
-  <!-- 引入外部JavaScript文件 -->
-  <script src="script.js"></script>
+        <!-- 相册网格 -->
+        <div class="mb-4">
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">我们的回忆</h3>
+        </div>
+        
+        <!-- 删除按钮 -->
+        <div id="deleteSelectedContainer" class="hidden mt-4">
+            <button id="deleteSelectedBtn" class="px-4 py-2 bg-gray-400 text-white rounded-lg flex items-center gap-2 cursor-not-allowed" disabled>
+                <i class="fa fa-trash"></i> 删除选中
+            </button>
+        </div>
+        
+        <!-- 相册网格容器 -->
+        <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <!-- 图片将通过JS动态添加 -->
+        </div>
+        
+        <!-- 加载更多按钮 -->
+        <div id="loadMoreContainer" class="mt-8 text-center hidden">
+            <button id="loadMoreBtn" class="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors">
+                加载更多照片
+            </button>
+        </div>
+    </div>
+
+    <!-- 各种模态框 -->
+    <!-- 头像修改模态框 -->
+    <div id="avatarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+            <h3 class="text-lg font-semibold mb-4">更换头像</h3>
+            <input type="file" id="avatarFileInput" accept="image/*" class="mb-3">
+            <div class="flex justify-between">
+                <button onclick="resetAvatar()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+                <button onclick="closeModal('avatarModal')" class="px-3 py-1 bg-pink-500 text-white rounded">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 相爱时长修改模态框 -->
+    <div id="loveDateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+            <h3 class="text-lg font-semibold mb-4">修改相爱起始时间</h3>
+            <input type="date" id="loveDateInModal" class="border rounded p-2 mb-3 w-full">
+            <div class="flex justify-between">
+                <button onclick="resetLoveDateInput()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+                <button onclick="saveLoveDateFromModal()" class="px-3 py-1 bg-pink-500 text-white rounded">确定</button>
+                <button onclick="closeModal('loveDateModal')" class="px-3 py-1 bg-gray-500 text-white rounded">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+            <h2 class="text-xl font-semibold text-pink-700 mb-4">相册设置</h2>
+            <!-- 设置表单内容 -->
+        </div>
+    </div>
+
+    <!-- 图片放大模态框 -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
+        <div class="relative max-w-4xl w-full max-h-full">
+            <div class="bg-transparent rounded-lg overflow-hidden">
+                <img id="modalImage" src="" alt="放大图片" class="w-full h-auto max-h-screen object-contain mx-auto">
+                <button onclick="closeImageModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
+
+
