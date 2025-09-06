@@ -548,20 +548,24 @@ async function startUpload() {
       addedUrls.push(url);
     }
 
+    // ✅ 立即更新本地 UI，提升体验
+    renderGalleryWithList(list);
+
     // 写回 GitHub
     await writeManifest(list, sha, `add ${files.length} photo(s)`);
 
-    // 等待 manifest 生效（短轮询）
+    // 后台等待 manifest 生效
     msg('写入成功，等待 GitHub 内容生效（可能需几秒）…');
-    const ok = await waitForManifestToContain(addedUrls, { attempts: 10, delayMs: 900 });
-    if (!ok) {
-      msg('写入成功，但未在短时间内检测到更新（可能 CDN 延迟）。稍等片刻或手动刷新。');
-    } else {
-      msg('更新已生效，刷新相册中…');
-    }
+    waitForManifestToContain(addedUrls, { attempts: 10, delayMs: 900 })
+      .then(ok => {
+        if (ok) {
+          msg('更新已生效，刷新相册中…');
+          renderGallery();
+        } else {
+          msg('写入成功，但可能存在 CDN 延迟，请稍等片刻或手动刷新。');
+        }
+      });
 
-    // 最后刷新显示
-    await renderGallery();
     $('#fileInput').value = '';
     msg('上传完成 ✅');
     showNotification('照片上传完成 ✅');
@@ -726,56 +730,81 @@ function updateDeleteButtonState() {
 }
 
 // 删除选中的图片
-// 修改 deleteSelectedImages 函数
 async function deleteSelectedImages() {
   if (selectedImages.length === 0) return;
-  
   if (!confirm(`确定要删除选中的 ${selectedImages.length} 张照片吗？此操作不可撤销。`)) {
     return;
   }
-  
+
   try {
     msg('删除中...');
-    
-    // 获取当前manifest
     const { list, sha } = await fetchManifest();
-    
-    // 从列表中移除选中的图片
+
+    // 更新本地 UI
     const updatedList = list.filter(item => !selectedImages.includes(item.src));
-    
+    renderGalleryWithList(updatedList);
+
     // 写回 GitHub
     await writeManifest(updatedList, sha, `删除 ${selectedImages.length} 张照片`);
-    
+
     msg('删除成功，等待更新生效...');
-    
-    // 等待manifest生效
-    const ok = await waitForManifestToNotContain(selectedImages, { attempts: 10, delayMs: 900 });
-    
-    if (!ok) {
-      msg('删除成功，但未在短时间内检测到更新（可能 CDN 延迟）。稍等片刻或手动刷新。');
-    } else {
-      msg('更新已生效，刷新相册中...');
-    }
-    
-    // 退出管理模式并刷新相册
+    waitForManifestToNotContain(selectedImages, { attempts: 10, delayMs: 900 })
+      .then(ok => {
+        if (ok) {
+          msg('更新已生效，刷新相册中...');
+          renderGallery();
+        } else {
+          msg('删除成功，但可能存在 CDN 延迟，请稍等片刻或手动刷新。');
+        }
+      });
+
+    // 清空状态
     isManageMode = false;
     selectedImages = [];
-    
-    // 更新按钮状态
     document.getElementById('manageGalleryBtn').innerHTML = '<i class="fa fa-cog"></i> 管理';
     document.getElementById('manageGalleryBtn').classList.remove('bg-gray-500');
     document.getElementById('manageGalleryBtn').classList.add('bg-blue-500');
     document.getElementById('deleteSelectedContainer').classList.add('hidden');
-    
-    await renderGallery();
+
     msg('照片已删除 ✅');
-    showNotification(`已删除 ${selectedImages.length} 张照片 ✅`);
+    showNotification(`已删除照片 ✅`);
   } catch (e) {
     console.error('deleteSelectedImages error', e);
     alert('删除失败：' + (e.message || e));
     msg('删除失败：' + (e.message || e));
     showNotification('删除失败：' + (e.message || e));
   }
+}
+
+// ✅ 新增：渲染给定列表（避免等待 GitHub）
+function renderGalleryWithList(list) {
+  const container = $('#gallery');
+  container.innerHTML = '';
+
+  if (!list || list.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full text-center py-8 text-gray-500">
+        <i class="fa fa-camera text-4xl mb-3"></i>
+        <p>还没有照片，上传第一张照片吧！</p>
+      </div>
+    `;
+    return;
+  }
+
+  list.slice().sort((a,b)=> (b.ts||0)-(a.ts||0)).forEach((item, idx) => {
+    const div = document.createElement('div');
+    div.className = 'relative cursor-pointer group';
+    div.setAttribute('data-src', item.src);
+
+    const img = document.createElement('img');
+    img.src = item.src;
+    img.alt = item.alt || `照片 ${idx+1}`;
+    img.className = 'w-full h-40 object-cover rounded-lg shadow transition-transform duration-300 group-hover:scale-105';
+    img.loading = 'lazy';
+
+    div.appendChild(img);
+    container.appendChild(div);
+  });
 }
 
 // 添加等待manifest不包含特定URL的函数
