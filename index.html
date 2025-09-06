@@ -1,136 +1,236 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <title>情侣相册</title>
-  <!-- 生产环境应使用本地构建的Tailwind -->
-  <link href="tailwind.min.css" rel="stylesheet">
+   <meta charset="UTF-8">
+   <title>情侣小站 ❤️</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <style>
+      .love-time-hover:hover {
+        background-color: #fce7f3 !important; /* 更深的粉色 */
+      }
+   </style>
+   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
-<body class="bg-pink-100 min-h-screen flex flex-col items-center p-6">
+<body class="bg-gradient-to-r from-pink-200 via-pink-300 to-pink-400 min-h-screen flex flex-col items-center p-6">
+  <!-- 设置按钮 -->
+  <button id="settingsBtn" class="fixed top-4 right-4 z-50 bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600 transition-all">
+    <i class="fa fa-cog text-xl"></i>
+  </button>
+  <h1 class="text-4xl font-bold text-white mb-6">我们的情侣小站 💕</h1>
 
-  <h1 class="text-2xl font-bold mb-4">情侣相册 💖</h1>
+  <!-- 头像区域 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6 relative">
+      <h2 class="text-xl font-semibold mb-4 text-center">我们的头像</h2>
+    <div class="relative w-full flex justify-between">
+      <!-- 左边头像 -->
+      <div class="flex flex-col items-center ml-[20%]">
+        <img id="avatar1"
+             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+             src="images/qinbaotai.png"
+             alt="老公头像"
+             onclick="openModal('avatarModal', 'avatar1')">
+        <p class="text-sm text-gray-500">老公 💙</p>
+      </div>
 
-  <!-- 上传区 -->
-  <input type="file" id="photoFiles" class="mb-4" multiple>
-  <button onclick="startUpload()" class="px-4 py-2 bg-pink-400 text-white rounded-lg">上传</button>
-
-  <!-- Token输入区（首次使用） -->
-  <div id="tokenInput" class="mt-4 p-4 bg-white rounded-lg shadow hidden">
-    <p class="text-sm mb-2">请输入GitHub访问令牌：</p>
-    <input type="password" id="tokenField" class="border p-2 rounded w-full">
-    <button onclick="saveToken()" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded">保存</button>
+      <!-- 右边头像 -->
+      <div class="flex flex-col items-center mr-[20%]">
+        <img id="avatar2"
+             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
+             src="images/yanxuran.png"
+             alt="老婆头像"
+             onclick="openModal('avatarModal', 'avatar2')">
+        <p class="text-sm text-gray-500">老婆 💖</p>
+      </div>
+    </div>
   </div>
 
-  <!-- 相册展示 -->
-  <div id="gallery" class="grid grid-cols-2 gap-4 w-full mt-6"></div>
+  <!-- 头像修改弹出层 -->
+  <div id="avatarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+      <h3 class="text-lg font-semibold mb-4">更换头像</h3>
+      <input type="file" id="avatarFileInput" accept="image/*" class="mb-3">
+      <div class="flex justify-between">
+        <button onclick="resetAvatar()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+        <button onclick="closeModal('avatarModal')" class="px-3 py-1 bg-pink-500 text-white rounded">关闭</button>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    const GH_OWNER = "Qin-kings";
-    const GH_REPO  = "love_test";
-    let GH_TOKEN = localStorage.getItem('gh_token');
+  <!-- 个人信息 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+    <h2 class="text-xl font-semibold mb-4">个人信息</h2>
+    <table id="infoTable" class="w-full border-collapse border text-center">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="border p-2">项目</th>
+          <th class="border p-2">老公 💙</th>
+          <th class="border p-2">老婆 💖</th>
+        </tr>
+      </thead>
+      <tbody id="infoTableBody">
+        <!-- JS 会在加载时填充默认行或保存的数据 -->
+      </tbody>
+    </table>
+    <div class="flex gap-3 mt-4">
+      <button type="button" onclick="addInfoRow()" class="px-4 py-2 bg-green-400 text-white rounded-xl shadow">新增</button>
+      <button type="button" onclick="saveTableInfo()" class="px-4 py-2 bg-pink-400 text-white rounded-xl shadow">保存</button>
+    </div>
+  </div>
 
-    // 检查Token是否存在
-    if (!GH_TOKEN) {
-      document.getElementById('tokenInput').classList.remove('hidden');
-    }
+  <!-- 相爱时长（修复显示问题） -->
+  <!-- 找到相爱时长的部分，修改为： -->
+  <div class="bg-pink-50 rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6"> <!-- 添加 bg-pink-50 背景色 -->
+    <h2 class="text-xl font-semibold mb-4">我们的相爱时长</h2>
+    <!-- 移除按钮，将整个区域改为可点击 -->
+    <div class="border border-pink-200 rounded p-4 text-center cursor-pointer hover:bg-pink-100 transition-colors" onclick="openModal('loveDateModal')">
+      <p id="loveDays" class="text-lg font-bold text-pink-600"></p>
+    </div>
+  </div>
 
-    function saveToken() {
-      GH_TOKEN = document.getElementById('tokenField').value;
-      localStorage.setItem('gh_token', GH_TOKEN);
-      document.getElementById('tokenInput').classList.add('hidden');
-      alert('Token已保存!');
-    }
+  <!-- 相爱时长修改弹出层 -->
+  <div id="loveDateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 shadow-lg relative w-72">
+      <h3 class="text-lg font-semibold mb-4">修改相爱起始时间</h3>
+      <input type="date" id="loveDateInModal" class="border rounded p-2 mb-3 w-full">
+      <div class="flex justify-between">
+        <button onclick="resetLoveDateInput()" class="px-3 py-1 bg-gray-400 text-white rounded">恢复默认</button>
+        <button onclick="saveLoveDateFromModal()" class="px-3 py-1 bg-pink-500 text-white rounded">确定</button>
+        <button onclick="closeModal('loveDateModal')" class="px-3 py-1 bg-gray-500 text-white rounded">关闭</button>
+      </div>
+    </div>
+  </div>
 
-    // 渲染相册
-    async function refreshGallery() {
-      const url = `https://raw.githubusercontent.com/${GH_OWNER}/${GH_REPO}/main/gallery.json`;
-      try {
-        const res = await fetch(url, {cache: "no-store"});
-        if(!res.ok) throw new Error('无法加载相册');
-        const list = await res.json();
-        const container = document.getElementById("gallery");
-        container.innerHTML = "";
-        list.slice().reverse().forEach(item => {
-          const img = document.createElement("img");
-          img.src = item.src;
-          img.className = "w-full h-40 object-cover rounded-lg shadow";
-          container.appendChild(img);
-        });
-      } catch (error) {
-        console.error("加载相册失败:", error);
-      }
-    }
+  <!-- 设置浮层 -->
+  <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl mx-4 max-h-[80vh] overflow-y-auto">
+      <h2 class="text-xl font-semibold text-pink-700 mb-4">相册设置</h2>
 
-    // 文件转base64
-    function fileToBase64(file){
-      return new Promise((resolve, reject)=>{
-        const r = new FileReader();
-        r.onload = ()=>resolve(r.result.split(",")[1]);
-        r.onerror = reject;
-        r.readAsDataURL(file);
-      });
-    }
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="col-span-1 sm:col-span-2">
+          <h2 class="font-semibold text-gray-700 mb-2">Cloudinary</h2>
+        </div>
+        <label class="block">
+          <span class="text-sm text-gray-600">Cloud name</span>
+          <input id="cloudName" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：abcd1234" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Unsigned upload preset</span>
+          <input id="uploadPreset" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：unsigned_preset" />
+        </label>
 
-    // 上传入口
-    async function startUpload(){
-      if (!GH_TOKEN) {
-        document.getElementById('tokenInput').classList.remove('hidden');
-        return alert("请先输入GitHub Token");
-      }
+        <div class="col-span-1 sm:col-span-2 mt-2">
+          <h2 class="font-semibold text-gray-700 mb-2">GitHub</h2>
+        </div>
+        <label class="block">
+          <span class="text-sm text-gray-600">Owner（用户名/组织）</span>
+          <input id="ghOwner" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：yourname" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Repo</span>
+          <input id="ghRepo" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：love-gallery" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Branch</span>
+          <input id="ghBranch" class="w-full mt-1 border rounded px-2 py-1" placeholder="默认 main" value="main" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-gray-600">Manifest 路径</span>
+          <input id="ghFile" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：gallery.json" value="gallery.json" />
+        </label>
+        <label class="block sm:col-span-2">
+          <span class="text-sm text-gray-600">GitHub Token（PAT，写入权限）</span>
+          <input id="ghToken" type="password" class="w-full mt-1 border rounded px-2 py-1" placeholder="只在本机输入，不要提交到仓库" />
+          <div class="flex items-center gap-3 mt-2">
+            <label class="inline-flex items-center gap-2 text-sm">
+              <input id="rememberToken" type="checkbox" class="scale-110" />
+              <span>记住 Token（仅保存在本机 localStorage）</span>
+            </label>
+            <button id="clearTokenBtn" class="text-xs text-gray-500 underline">清除已保存 Token</button>
+          </div>
+        </label>
+      </div>
 
-      const files = document.getElementById("photoFiles").files;
-      if(files.length === 0) return alert("请选择文件");
+      <div class="mt-4 flex gap-2">
+        <button id="modalSaveCfgBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg">保存设置</button>
+        <button onclick="closeSettingsModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg border">关闭</button>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">
+        提示：先在仓库创建 <code>gallery.json</code>，内容为 <code>[]</code>。页面会使用 GitHub API 读取最新内容（优于 raw.githubusercontent）。
+      </p>
+    </div>
+  </div>
+   
+  <!-- 图片放大模态框 -->
+  <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
+    <div class="relative max-w-4xl w-full max-h-full">
+      <div class="bg-transparent rounded-lg overflow-hidden">
+        <img id="modalImage" src="" alt="放大图片" class="w-full h-auto max-h-screen object-contain mx-auto">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
+          <i class="fa fa-times text-xl"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+   
+  <!-- 生活相册 - 替换为Cloudinary+GitHub版本 -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+     <!-- 标题和操作区 -->
+     <div class="flex justify-between items-center mb-6">
+       <h2 class="text-2xl font-semibold text-pink-700">我们的相册 📸</h2>
+       <div class="flex gap-2">
+         <button id="refreshGalleryBtn" class="px-4 py-2 bg-pink-500 text-white rounded-lg flex items-center gap-2 hover:bg-pink-600 transition-colors">
+           <i class="fa fa-refresh"></i> 刷新相册
+         </button>
+         <button id="manageGalleryBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-colors">
+           <i class="fa fa-cog"></i> 管理
+         </button>
+       </div>
+     </div>
 
-      for(const f of files){
-        try {
-          const base64 = await fileToBase64(f);
+     <!-- 上传卡片 -->
+     <div class="bg-pink-50 rounded-xl p-5 mb-6 border border-pink-200">
+       <h3 class="font-semibold text-pink-800 mb-3 text-lg">捕捉美好瞬间</h3>
+       <p class="text-sm text-pink-600 mb-4">上传图片到 Cloudinary 并保存到 GitHub</p>
+       
+       <div class="flex flex-col sm:flex-row gap-4 items-start">
+         <div class="flex-1">
+           <label class="block text-sm font-medium text-gray-700 mb-2">选择图片</label>
+           <div class="flex items-center gap-3">
+             <label for="fileInput" class="cursor-pointer bg-white border border-pink-300 text-pink-700 px-4 py-2 rounded-lg hover:bg-pink-50 transition-colors">
+               <i class="fa fa-cloud-upload mr-2"></i>选择文件
+             </label>
+             <span id="fileName" class="text-sm text-gray-500">未选择任何文件</span>
+             <input id="fileInput" type="file" accept="image/*" multiple class="hidden">
+           </div>
+         </div>
+         
+         <button id="uploadBtn" class="px-5 py-2.5 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition-colors flex items-center gap-2">
+           <i class="fa fa-paper-plane"></i> 上传图片
+         </button>
+       </div>
+       
+       <p id="msg" class="text-sm mt-3 text-pink-600"></p>
+      </div>
 
-          // 调用GitHub API
-          const res = await fetch(
-            `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/actions/workflows/add_photo.yml/dispatches`,
-            {
-              method: "POST",
-              headers: {
-                "Accept": "application/vnd.github+json",
-                "Authorization": `Bearer ${GH_TOKEN}`
-              },
-              body: JSON.stringify({
-                ref: "main",
-                inputs: { 
-                  base64,
-                  filename: f.name
-                }
-              })
-            }
-          );
+     <!-- 相册网格 -->
+     <div class="mb-4">
+       <h3 class="text-lg font-semibold text-gray-700 mb-3">我们的回忆</h3>
+     </div>
+     
+     <!-- 在相册网格下方添加删除按钮（仅在管理模式下显示） -->
+     <!-- 修改删除按钮的初始状态 -->
+     <div id="deleteSelectedContainer" class="hidden mt-4">
+       <button id="deleteSelectedBtn" class="px-4 py-2 bg-gray-400 text-white rounded-lg flex items-center gap-2 cursor-not-allowed" disabled>
+         <i class="fa fa-trash"></i> 删除选中
+       </button>
+     </div>
+     
+     <div id="gallery" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+       <!-- 图片将通过JS动态添加 -->
+     </div>
+   </div>
 
-          if(res.ok){
-            alert(`上传成功 ✅：${f.name}，请稍等相册刷新`);
-          } else {
-            const msg = await res.text();
-            // Token可能失效，清除它
-            if(res.status === 401) {
-              localStorage.removeItem('gh_token');
-              GH_TOKEN = null;
-              document.getElementById('tokenInput').classList.remove('hidden');
-            }
-            alert(`上传失败 ❌：${msg}`);
-          }
-        } catch (error) {
-          console.error("上传错误:", error);
-          alert(`上传出错: ${error.message}`);
-        }
-      }
-
-      setTimeout(refreshGallery, 5000);
-    }
-
-    document.addEventListener("DOMContentLoaded", refreshGallery);
-  </script>
+  <!-- 引入外部JavaScript文件 -->
+  <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
