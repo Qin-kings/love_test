@@ -571,8 +571,8 @@ async function startUpload() {
     $('#fileInput').value = '';
     $('#fileName').textContent = "未选择任何文件";
     msg('上传完成 ✅');
-    isUploading=false;
     showNotification('照片上传完成 ✅');
+    isUploading=false;
   } catch (e) {
     console.error('startUpload error', e);
     alert('上传失败：' + (e.message || e));
