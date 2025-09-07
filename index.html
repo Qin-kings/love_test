@@ -8,6 +8,51 @@
       .love-time-hover:hover {
         background-color: #fce7f3 !important; /* 更深的粉色 */
       }
+
+      /* 装饰效果样式 */
+      .avatar-decoration {
+        position: absolute;
+        top: -15px;
+        left: -15px;
+        width: calc(100% + 30px);
+        height: calc(100% + 30px);
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 10 L60 40 L90 40 L65 60 L75 90 L50 70 L25 90 L35 60 L10 40 L40 40 Z" fill="none" stroke="%23ff6b9d" stroke-width="2"/><circle cx="50" cy="50" r="45" fill="none" stroke="%23ff6b9d" stroke-width="2" stroke-dasharray="5,5"/></svg>');
+        background-size: contain;
+        background-repeat: no-repeat;
+        z-index: 5;
+        pointer-events: none;
+        animation: rotateDecoration 20s linear infinite;
+      }
+
+      @keyframes rotateDecoration {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+
+      .avatar-container {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      .avatar-img {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        z-index: 10;
+        transition: all 0.3s ease;
+      }
+      
+      .avatar-container:hover .avatar-img {
+        transform: scale(1.05);
+      }
+      
    </style>
    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
@@ -18,28 +63,34 @@
   </button>
   <h1 class="text-4xl font-bold text-white mb-6">我们的情侣小站 💕</h1>
 
-  <!-- 头像区域 -->
+  <!-- 头像区域 - 已添加装饰效果 -->
   <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6 relative">
       <h2 class="text-xl font-semibold mb-4 text-center">我们的头像</h2>
     <div class="relative w-full flex justify-between">
       <!-- 左边头像 -->
       <div class="flex flex-col items-center ml-[20%]">
-        <img id="avatar1"
-             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
-             src="https://picsum.photos/id/1/200/200"
-             alt="老公头像"
-             onclick="openModal('avatarModal', 'avatar1')">
-        <p class="text-sm text-gray-500">老公 💙</p>
+        <div class="avatar-container">
+          <div class="avatar-decoration"></div>
+          <img id="avatar1"
+               class="avatar-img cursor-pointer"
+               src="https://picsum.photos/id/1/200/200"
+               alt="老公头像"
+               onclick="openModal('avatarModal', 'avatar1')">
+        </div>
+        <p class="text-sm text-gray-500 mt-2">老公 💙</p>
       </div>
 
       <!-- 右边头像 -->
       <div class="flex flex-col items-center mr-[20%]">
-        <img id="avatar2"
-             class="w-24 h-24 rounded-full object-cover border-2 mb-2 cursor-pointer"
-             src="https://picsum.photos/id/2/200/200"
-             alt="老婆头像"
-             onclick="openModal('avatarModal', 'avatar2')">
-        <p class="text-sm text-gray-500">老婆 💖</p>
+        <div class="avatar-container">
+          <div class="avatar-decoration"></div>
+          <img id="avatar2"
+               class="avatar-img cursor-pointer"
+               src="https://picsum.photos/id/2/200/200"
+               alt="老婆头像"
+               onclick="openModal('avatarModal', 'avatar2')">
+        </div>
+        <p class="text-sm text-gray-500 mt-2">老婆 💖</p>
       </div>
     </div>
   </div>
@@ -237,6 +288,7 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
