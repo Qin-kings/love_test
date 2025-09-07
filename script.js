@@ -730,9 +730,10 @@ function updateDeleteButtonState() {
 // 删除选中的图片
 // 修改 deleteSelectedImages 函数
 async function deleteSelectedImages() {
+  const deleteCount = selectedImages.length;
   if (selectedImages.length === 0) return;
   
-  if (!confirm(`确定要删除选中的 ${selectedImages.length} 张照片吗？此操作不可撤销。`)) {
+  if (!confirm(`确定要删除选中的 ${deleteCount} 张照片吗？此操作不可撤销。`)) {
     return;
   }
   
@@ -746,7 +747,7 @@ async function deleteSelectedImages() {
     const updatedList = list.filter(item => !selectedImages.includes(item.src));
     
     // 写回 GitHub
-    await writeManifest(updatedList, sha, `删除 ${selectedImages.length} 张照片`);
+    await writeManifest(updatedList, sha, `删除 ${deleteCount} 张照片`);
     
     msg('删除成功，等待更新生效...');
     
@@ -771,7 +772,7 @@ async function deleteSelectedImages() {
     
     await renderGallery();
     msg('照片已删除 ✅');
-    showNotification(`已删除 ${selectedImages.length} 张照片 ✅`);
+    showNotification(`已删除 ${deleteCount} 张照片 ✅`);
   } catch (e) {
     console.error('deleteSelectedImages error', e);
     alert('删除失败：' + (e.message || e));
