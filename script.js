@@ -565,6 +565,7 @@ async function startUpload() {
     // 最后刷新显示
     await renderGallery();
     $('#fileInput').value = '';
+    $('#fileName').textContent = "未选择任何文件";
     msg('上传完成 ✅');
     showNotification('照片上传完成 ✅');
   } catch (e) {
@@ -593,7 +594,14 @@ document.addEventListener('DOMContentLoaded', () => {
       fileName.textContent = "未选择任何文件";
     }
   });
-   
+  
+  // 添加取消上传按钮事件监听
+  document.getElementById('cancelUploadBtn').addEventListener('click', function() {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileName').textContent = "未选择任何文件";
+    msg('');
+  }); 
+  
   // 初始化并启动计时器更新恋爱时长
   const startDate = getLoveDate();
   calcLoveTime(); // 立即计算一次
@@ -838,4 +846,14 @@ document.addEventListener('DOMContentLoaded', function() {
   if (refreshBtn) {
     refreshBtn.addEventListener('click', forceRefreshGallery);
   }
+});
+
+// 取消上传功能
+document.getElementById('cancelUploadBtn').addEventListener('click', function() {
+  // 清空文件输入
+  document.getElementById('fileInput').value = '';
+  // 重置文件显示
+  document.getElementById('fileName').textContent = "未选择任何文件";
+  // 清空任何上传消息
+  msg('');
 });
