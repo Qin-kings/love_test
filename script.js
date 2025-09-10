@@ -687,12 +687,6 @@ function openImageModal(src) {
   const modal = document.getElementById('imageModal');
   const modalImage = document.getElementById('modalImage');
   
- // 保存当前图片URL到全局变量，以便信息按钮使用
-  window.currentModalImageSrc = src;
-  document.getElementById('infoButton').addEventListener('click', function() {
-  showImageInfo(window.currentModalImageSrc);
-});
-  
   console.log('打开图片模态框，尝试加载图片:', src);
  
   // 确保URL有效
@@ -711,10 +705,13 @@ function openImageModal(src) {
     // 可以设置一个默认错误图片
     modalImage.alt = '图片加载失败';
   };
- 
+  
   modalImage.src = src;
   modal.classList.remove('hidden');
   document.body.style.overflow = 'hidden'; // 防止背景滚动
+
+  // 新增这一行：保存当前图片URL到全局变量，以便信息按钮使用
+  window.currentModalImageSrc = src;
 }
 
 function closeImageModal() {
@@ -1045,9 +1042,8 @@ function hideImageInfo() {
 // 添加信息按钮事件监听
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('infoButton').addEventListener('click', function() {
-    const modalImage = document.getElementById('modalImage');
-    showImageInfo(modalImage.src);
-  });
+  showImageInfo(window.currentModalImageSrc);
+});
   
   // 点击信息区域外部时隐藏信息
   document.getElementById('imageInfoModal').addEventListener('click', function(e) {
