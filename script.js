@@ -1017,12 +1017,24 @@ function forceRefreshGallery() {
 
 // 显示图片信息
 function showImageInfo(src) {
+  console.log('显示图片信息，URL:', src);
+  
   // 查找图片信息
   const imageInfo = galleryList.find(item => item.src === src);
-  if (!imageInfo) return;
+  console.log('找到的图片信息:', imageInfo);
+  
+  if (!imageInfo) {
+    console.log('未找到图片信息');
+    return;
+  }
   
   const infoModal = document.getElementById('imageInfoModal');
   const infoContent = document.getElementById('imageInfoContent');
+  
+  if (!infoModal || !infoContent) {
+    console.log('信息弹窗元素未找到');
+    return;
+  }
   
   // 构建信息内容
   let html = `
@@ -1033,6 +1045,7 @@ function showImageInfo(src) {
   
   infoContent.innerHTML = html;
   infoModal.classList.remove('hidden');
+  console.log('信息弹窗已显示');
 }
 
 // 隐藏图片信息
@@ -1042,34 +1055,24 @@ function hideImageInfo() {
 
 // 添加信息按钮事件监听
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('infoButton').addEventListener('click', function() {
-    // 使用全局变量中保存的图片URL
-    showImageInfo(window.currentModalImageSrc);
-  });
-  
-  // 点击信息区域外部时隐藏信息
-  document.getElementById('imageInfoModal').addEventListener('click', function(e) {
-    e.stopPropagation();
-  });
-  
-  document.getElementById('imageModal').addEventListener('click', function() {
-    hideImageInfo();
-  });
-
-  // 确保信息按钮存在
-  const infoButton = document.getElementById('infoButton');
-  if (infoButton) {
-    infoButton.addEventListener('click', function() {
+  // 使用事件委托，在文档级别监听点击事件
+  document.addEventListener('click', function(e) {
+    // 检查点击的是否是信息按钮
+    if (e.target && (e.target.id === 'infoButton' || e.target.closest('#infoButton'))) {
       console.log('信息按钮被点击');
       if (window.currentModalImageSrc) {
         showImageInfo(window.currentModalImageSrc);
       } else {
         console.log('没有保存的图片URL');
       }
-    });
-  } else {
-    console.log('信息按钮未找到');
-  }
+      e.stopPropagation(); // 防止事件冒泡
+    }
+    
+    // 检查点击的是否是图片模态框（但不是信息弹窗）
+    if (e.target && e.target.id === 'imageModal') {
+      hideImageInfo();
+    }
+  });
   
   // 点击信息区域外部时隐藏信息
   const infoModal = document.getElementById('imageInfoModal');
@@ -1078,15 +1081,6 @@ document.addEventListener('DOMContentLoaded', function() {
       e.stopPropagation();
     });
   }
-  
-  // 点击模态框其他区域时隐藏信息
-  const imageModal = document.getElementById('imageModal');
-  if (imageModal) {
-    imageModal.addEventListener('click', function() {
-      hideImageInfo();
-    });
-  }
-  
 });
   
 
