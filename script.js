@@ -712,6 +712,7 @@ function openImageModal(src) {
 
   // 新增这一行：保存当前图片URL到全局变量，以便信息按钮使用
   window.currentModalImageSrc = src;
+  console.log('保存的图片URL:', window.currentModalImageSrc);
 }
 
 function closeImageModal() {
@@ -1042,8 +1043,9 @@ function hideImageInfo() {
 // 添加信息按钮事件监听
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('infoButton').addEventListener('click', function() {
-  showImageInfo(window.currentModalImageSrc);
-});
+    // 使用全局变量中保存的图片URL
+    showImageInfo(window.currentModalImageSrc);
+  });
   
   // 点击信息区域外部时隐藏信息
   document.getElementById('imageInfoModal').addEventListener('click', function(e) {
@@ -1053,5 +1055,39 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('imageModal').addEventListener('click', function() {
     hideImageInfo();
   });
+
+  // 确保信息按钮存在
+  const infoButton = document.getElementById('infoButton');
+  if (infoButton) {
+    infoButton.addEventListener('click', function() {
+      console.log('信息按钮被点击');
+      if (window.currentModalImageSrc) {
+        showImageInfo(window.currentModalImageSrc);
+      } else {
+        console.log('没有保存的图片URL');
+      }
+    });
+  } else {
+    console.log('信息按钮未找到');
+  }
+  
+  // 点击信息区域外部时隐藏信息
+  const infoModal = document.getElementById('imageInfoModal');
+  if (infoModal) {
+    infoModal.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+  }
+  
+  // 点击模态框其他区域时隐藏信息
+  const imageModal = document.getElementById('imageModal');
+  if (imageModal) {
+    imageModal.addEventListener('click', function() {
+      hideImageInfo();
+    });
+  }
+  
 });
+  
+
 
