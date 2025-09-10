@@ -242,6 +242,7 @@ const $ = s => document.querySelector(s);
 const msg = t => { $('#msg').textContent = t || ''; };
 
 function loadCfgToForm() {
+  $('#uploaderName').value = localStorage.getItem('uploaderName') || '我们';
   $('#cloudName').value = localStorage.getItem(C.cloudName) || 'dbqhemrnw';
   $('#uploadPreset').value = localStorage.getItem(C.uploadPreset) || 'unsigned_preset';
   $('#ghOwner').value = localStorage.getItem(C.ghOwner) || 'Qin-kings';
@@ -253,6 +254,7 @@ function loadCfgToForm() {
 }
 
 function saveFormToCfg() {
+  localStorage.setItem('uploaderName', $('#uploaderName').value.trim() || '我们');
   localStorage.setItem(C.cloudName, $('#cloudName').value.trim());
   localStorage.setItem(C.uploadPreset, $('#uploadPreset').value.trim());
   localStorage.setItem(C.ghOwner, $('#ghOwner').value.trim());
@@ -609,7 +611,16 @@ async function startUpload() {
     // 逐个上传 Cloudinary
     for (const f of files) {
       const url = await uploadToCloudinary(f);
-      const item = { src: url, alt: f.name, who: '我们', ts: Date.now() };
+      const uploaderName = localStorage.getItem('uploaderName') || '我们';
+      const item = { 
+        src: url, 
+        alt: f.name, 
+        who: uploaderName, 
+        ts: Date.now(),
+        filename: f.name,
+        uploadTime: new Date().toLocaleString('zh-CN')
+      };
+
       list.push(item);
       addedUrls.push(url);
     }
@@ -675,7 +686,13 @@ document.getElementById('refreshGalleryBtn').addEventListener('click', renderGal
 function openImageModal(src) {
   const modal = document.getElementById('imageModal');
   const modalImage = document.getElementById('modalImage');
- 
+  
+ // 保存当前图片URL到全局变量，以便信息按钮使用
+  window.currentModalImageSrc = src;
+  document.getElementById('infoButton').addEventListener('click', function() {
+  showImageInfo(window.currentModalImageSrc);
+});
+  
   console.log('打开图片模态框，尝试加载图片:', src);
  
   // 确保URL有效
@@ -999,4 +1016,46 @@ function forceRefreshGallery() {
   renderGallery(1);
   showNotification('已强制刷新相册 🔄');
 }
+
+// 显示图片信息
+function showImageInfo(src) {
+  // 查找图片信息
+  const imageInfo = galleryList.find(item => item.src === src);
+  if (!imageInfo) return;
+  
+  const infoModal = document.getElementById('imageInfoModal');
+  const infoContent = document.getElementById('imageInfoContent');
+  
+  // 构建信息内容
+  let html = `
+    <div class="mb-2"><strong>${imageInfo.filename || '未命名'}</strong></div>
+    <div class="mb-1">上传者: ${imageInfo.who || '未知'}</div>
+    <div>上传时间: ${imageInfo.uploadTime || '未知'}</div>
+  `;
+  
+  infoContent.innerHTML = html;
+  infoModal.classList.remove('hidden');
+}
+
+// 隐藏图片信息
+function hideImageInfo() {
+  document.getElementById('imageInfoModal').classList.add('hidden');
+}
+
+// 添加信息按钮事件监听
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('infoButton').addEventListener('click', function() {
+    const modalImage = document.getElementById('modalImage');
+    showImageInfo(modalImage.src);
+  });
+  
+  // 点击信息区域外部时隐藏信息
+  document.getElementById('imageInfoModal').addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+  
+  document.getElementById('imageModal').addEventListener('click', function() {
+    hideImageInfo();
+  });
+});
 
