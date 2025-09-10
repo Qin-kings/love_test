@@ -713,12 +713,21 @@ function openImageModal(src) {
   // 新增这一行：保存当前图片URL到全局变量，以便信息按钮使用
   window.currentModalImageSrc = src;
   console.log('保存的图片URL:', window.currentModalImageSrc);
+
+  // 新增：确保信息弹窗是隐藏的
+  hideImageInfo();
 }
 
 function closeImageModal() {
   const modal = document.getElementById('imageModal');
   modal.classList.add('hidden');
   document.body.style.overflow = ''; // 恢复背景滚动
+
+  // 新增：关闭信息弹窗
+  hideImageInfo();
+  
+  // 新增：清除当前图片URL
+  window.currentModalImageSrc = null;
 }
 
 // 点击模态框背景关闭
@@ -1035,6 +1044,11 @@ function showImageInfo(src) {
     console.log('信息弹窗元素未找到');
     return;
   }
+
+  // 添加调试信息
+  console.log('上传者名字:', imageInfo.who);
+  console.log('文件名:', imageInfo.filename);
+  console.log('上传时间:', imageInfo.uploadTime);
   
   // 构建信息内容
   let html = `
@@ -1083,5 +1097,11 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
   
-
-
+// 隐藏图片信息
+function hideImageInfo() {
+  const infoModal = document.getElementById('imageInfoModal');
+  if (infoModal) {
+    infoModal.classList.add('hidden');
+    console.log('信息弹窗已隐藏');
+  }
+}
