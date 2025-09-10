@@ -6,44 +6,52 @@
    <script src="https://cdn.tailwindcss.com"></script>
    <style>
       .love-time-hover:hover {
-        background-color: #fce7f3 !important;
+        background-color: #fce7f3 !important; /* 更深的粉色 */
       }
+      /* 分页控件样式 */
       #paginationControls input[type="number"]::-webkit-outer-spin-button,
       #paginationControls input[type="number"]::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
       }
+      
       #paginationControls input[type="number"] {
         -moz-appearance: textfield;
       }
+     
+      /* 确保在所有设备上都保持4列布局 */
       #gallery {
          grid-template-columns: repeat(4, minmax(0, 1fr));
       }
+      /* 确保空位占位但不可见 */
       #gallery > div:empty {
          visibility: hidden;
       }
+   
+      /* 确保相册容器高度固定 */
       #gallery {
-         min-height: 480px;
+         min-height: 480px; /* 与内联样式保持一致 */
       }
+      /* 响应式调整 - 在小屏幕上保持4列但调整图片大小 */
       @media (max-width: 640px) {
          #gallery {
             gap: 0.5rem;
          }
+  
          #gallery img {
-            height: 32vw;
+            height: 32vw; /* 在小屏幕上使用视口宽度单位 */
          }
+  
          #gallery > div:empty {
             height: 32vw;
          }
       }
+      
+      /* 在大屏幕上固定图片高度 */
       @media (min-width: 641px) {
          #gallery img {
-            height: 10rem;
+            height: 10rem; /* 与 h-40 相同 */
          }
-      }
-      /* 信息面板样式 */
-      #infoPanel {
-         transition: all 0.3s ease;
       }
    </style>
    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -114,9 +122,11 @@
     </div>
   </div>
 
-  <!-- 相爱时长 -->
-  <div class="bg-pink-50 rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
+  <!-- 相爱时长（修复显示问题） -->
+  <!-- 找到相爱时长的部分，修改为： -->
+  <div class="bg-pink-50 rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6"> <!-- 添加 bg-pink-50 背景色 -->
     <h2 class="text-xl font-semibold mb-4">我们的相爱时长</h2>
+    <!-- 移除按钮，将整个区域改为可点击 -->
     <div class="border border-pink-200 rounded p-4 text-center cursor-pointer hover:bg-pink-100 transition-colors" onclick="openModal('loveDateModal')">
       <p id="loveDays" class="text-lg font-bold text-pink-600"></p>
     </div>
@@ -141,17 +151,7 @@
       <h2 class="text-xl font-semibold text-pink-700 mb-4">相册设置</h2>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <!-- 新增上传者设置 -->
         <div class="col-span-1 sm:col-span-2">
-          <h2 class="font-semibold text-gray-700 mb-2">上传者信息</h2>
-        </div>
-        <label class="block sm:col-span-2">
-          <span class="text-sm text-gray-600">默认上传者名称</span>
-          <input id="uploaderName" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：小情侣" />
-          <p class="text-xs text-gray-500 mt-1">上传照片时将使用此名称作为默认上传者</p>
-        </label>
-
-        <div class="col-span-1 sm:col-span-2 mt-4">
           <h2 class="font-semibold text-gray-700 mb-2">Cloudinary</h2>
         </div>
         <label class="block">
@@ -163,7 +163,7 @@
           <input id="uploadPreset" class="w-full mt-1 border rounded px-2 py-1" placeholder="例如：unsigned_preset" />
         </label>
 
-        <div class="col-span-1 sm:col-span-2 mt-4">
+        <div class="col-span-1 sm:col-span-2 mt-2">
           <h2 class="font-semibold text-gray-700 mb-2">GitHub</h2>
         </div>
         <label class="block">
@@ -205,35 +205,14 @@
     </div>
   </div>
 
-  <!-- 图片放大模态框 - 固定大小版本 -->
+  <!-- 图片放大模态框 -->
   <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
-    <div class="relative bg-white rounded-lg shadow-xl w-[90vw] max-w-2xl h-[80vh] max-h-[600px] flex flex-col">
-      <!-- 顶部按钮区域 -->
-      <div class="absolute top-4 right-4 flex space-x-2 z-10">
-        <button id="infoButton" class="bg-black bg-opacity-50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition-colors">
-          <i class="fa fa-info"></i>
+    <div class="relative flex items-center justify-center w-full h-full">
+      <div class="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full max-h-[80vh] flex items-center justify-center">
+        <img id="modalImage" src="" alt="放大图片" class="max-w-full max-h-[80vh] object-contain mx-auto">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
+          <i class="fa fa-times text-xl"></i>
         </button>
-        <button onclick="closeImageModal()" class="bg-black bg-opacity-50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition-colors">
-          <i class="fa fa-times"></i>
-        </button>
-      </div>
-
-      <!-- 图片显示区域 -->
-      <div class="w-full h-full flex items-center justify-center p-4 overflow-hidden">
-        <img id="modalImage" src="" alt="放大图片" class="max-w-full max-h-full object-contain">
-      </div>
-
-      <!-- 信息面板 -->
-      <div id="infoPanel" class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white p-4 transform translate-y-full transition-transform duration-300">
-        <h3 class="font-semibold mb-2">照片信息</h3>
-        <div class="grid grid-cols-2 gap-2 text-sm">
-          <div>上传者:</div>
-          <div id="infoUploader">未知</div>
-          <div>上传时间:</div>
-          <div id="infoTime">未知</div>
-          <div>照片名称:</div>
-          <div id="infoName">未知</div>
-        </div>
       </div>
     </div>
   </div>
@@ -277,7 +256,7 @@
     </div>
   </div>
 
-  <!-- 生活相册 -->
+  <!-- 生活相册 - 替换为Cloudinary+GitHub版本 -->
   <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-3xl mb-6">
     <!-- 标题和操作区 -->
     <div class="flex justify-between items-center mb-6">
@@ -296,6 +275,7 @@
     </div>
 
      <!-- 相册网格 -->
+     <!-- 找到相册标题部分，修改为： -->
      <div class="mb-4 flex justify-between items-center">
        <div class="flex items-center">
          <h3 class="text-lg font-semibold text-gray-700">我们的回忆</h3>
