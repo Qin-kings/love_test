@@ -700,6 +700,10 @@ function openImageModal(src) {
   // 添加加载事件监听器
   modalImage.onload = function() {
     console.log('图片加载成功');
+        
+    // 确保图片在容器中正确显示
+    this.classList.add('object-contain');
+    this.classList.remove('object-cover');
   };
  
   modalImage.onerror = function() {
