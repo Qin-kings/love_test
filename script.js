@@ -1074,11 +1074,6 @@ function showImageInfo(src) {
   console.log('信息弹窗已显示');
 }
 
-// 隐藏图片信息
-function hideImageInfo() {
-  document.getElementById('imageInfoModal').classList.add('hidden');
-}
-
 // 添加信息按钮事件监听
 document.addEventListener('DOMContentLoaded', function() {
   // 使用事件委托，在文档级别监听点击事件
