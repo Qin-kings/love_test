@@ -224,8 +224,9 @@
   <!-- 图片放大模态框 -->
   <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
     <div class="relative flex items-center justify-center w-full h-full">
-      <div class="bg-white rounded-lg overflow-hidden shadow-xl max-w-4xl w-full max-h-[80vh] flex items-center justify-center">
-        <img id="modalImage" src="" alt="放大图片" class="max-w-full max-h-[80vh] object-contain mx-auto">
+      <!-- 修改容器为固定大小 -->
+      <div class="bg-white rounded-lg overflow-hidden shadow-xl w-[90vw] h-[90vh] max-w-4xl max-h-[80vh] flex items-center justify-center">
+        <img id="modalImage" src="" alt="放大图片" class="max-w-full max-h-full object-contain mx-auto">
         <div class="absolute top-4 right-4 flex gap-2">
           <button id="infoButton" class="bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
             <i class="fa fa-info text-xl"></i>
@@ -233,7 +234,7 @@
           <button onclick="closeImageModal()" class="bg-black bg-opacity-50 text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors">
             <i class="fa fa-times text-xl"></i>
           </button>
-        </div>
+        /div>
         <!-- 图片信息弹窗 -->
         <div id="imageInfoModal" class="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white p-3 rounded-lg hidden">
           <div id="imageInfoContent" class="text-sm"></div>
@@ -329,4 +330,5 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
