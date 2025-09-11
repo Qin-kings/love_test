@@ -1065,7 +1065,7 @@ function showImageInfo(src) {
   // 构建信息内容
   let html = `
     <div class="mb-2"><strong>${imageInfo.filename || '未命名'}</strong></div>
-    <div class="mb-1">上传者: ${imageInfo.who || '未知'}</div>
+    <div class="mb-1">上传者: ${decodeURIComponent(imageInfo.who) || '未知'}</div>
     <div>上传时间: ${imageInfo.uploadTime || '未知'}</div>
   `;
   
