@@ -1058,7 +1058,7 @@ function showImageInfo(src) {
   }
   
   // 添加调试信息
-  console.log('上传者名字:', imageInfo.who);
+  console.log('上传者名字:', decodeURIComponent(imageInfo.who));
   console.log('文件名:', imageInfo.filename);
   console.log('上传时间:', imageInfo.uploadTime);
   
