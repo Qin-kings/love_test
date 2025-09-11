@@ -63,6 +63,20 @@
       #imageInfoContent {
         line-height: 1.4;
       }
+      /* 确保模态框容器固定大小 */
+      #imageModal > div > div {
+        width: 90vw;
+        height: 90vh;
+        max-width: 1200px;
+        max-height: 80vh;
+      }
+      
+      /* 确保图片在容器中等比例缩放 */
+      #modalImage {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+      }
    </style>
    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
@@ -330,5 +344,6 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
