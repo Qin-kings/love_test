@@ -1047,43 +1047,15 @@ function showImageInfo(src) {
     return;
   }
   
-  // 尝试不同的解码方法
+  // 使用方法二解码上传者名字
   let uploaderName = '未知';
   try {
-    // 方法1: 直接使用
-    uploaderName = imageInfo.who;
-    console.log('方法1结果:', uploaderName);
-    
-    // 方法2: URI 解码
-    try {
-      const decoded = decodeURIComponent(imageInfo.who);
-      console.log('方法2结果:', decoded);
-      if (decoded && decoded !== imageInfo.who) {
-        uploaderName = decoded;
-      }
-    } catch (e) {
-      console.log('方法2失败:', e);
-    }
-    
-    // 方法3: 使用 TextDecoder
-    try {
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder('utf-8');
-      const encoded = encoder.encode(imageInfo.who);
-      const decoded = decoder.decode(encoded);
-      console.log('方法3结果:', decoded);
-      if (decoded && decoded !== imageInfo.who) {
-        uploaderName = decoded;
-      }
-    } catch (e) {
-      console.log('方法3失败:', e);
-    }
+    uploaderName = decodeURIComponent(imageInfo.who);
+    console.log('解码后的上传者名字:', uploaderName);
   } catch (e) {
-    console.error('解码上传者名字失败:', e);
+    console.log('解码上传者名字失败，使用原值:', e);
     uploaderName = imageInfo.who || '未知';
   }
-  
-  console.log('最终上传者名字:', uploaderName);
   
   // 添加调试信息
   console.log('上传者名字:', imageInfo.who);
