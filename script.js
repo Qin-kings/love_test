@@ -3,6 +3,9 @@
 let isManageMode = false;
 let selectedImages = [];
 
+// 追踪当前打开的图片索引
+let currentImageIndex = -1;
+
 // ========== 分页相关变量 ==========
 let currentPage = 1;
 let totalPages = 1;
@@ -690,7 +693,7 @@ function openImageModal(src) {
   const modalImage = document.getElementById('modalImage');
   
   console.log('打开图片模态框，尝试加载图片:', src);
- 
+
   // 确保URL有效
   if (!src || typeof src !== 'string') {
     console.error('无效的图片URL:', src);
@@ -714,6 +717,9 @@ function openImageModal(src) {
 
   // 新增这一行：保存当前图片URL到全局变量，以便信息按钮使用
   window.currentModalImageSrc = src;
+  // 记录当前索引
+  currentImageIndex = galleryList.findIndex(item => item.src === src);
+
   console.log('保存的图片URL:', window.currentModalImageSrc);
 
   // 新增：确保信息弹窗是隐藏的
@@ -1029,11 +1035,11 @@ function forceRefreshGallery() {
 // 显示图片信息
 function showImageInfo(src) {
   console.log('显示图片信息，URL:', src);
-  
+
   // 查找图片信息
   const imageInfo = galleryList.find(item => item.src === src);
   console.log('找到的图片信息:', imageInfo);
-  
+
   if (!imageInfo) {
     console.log('未找到图片信息');
     return;
@@ -1088,13 +1094,13 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       e.stopPropagation(); // 防止事件冒泡
     }
-    
+
     // 检查点击的是否是图片模态框（但不是信息弹窗）
     if (e.target && e.target.id === 'imageModal') {
       hideImageInfo();
     }
   });
-  
+
   // 点击信息区域外部时隐藏信息
   const infoModal = document.getElementById('imageInfoModal');
   if (infoModal) {
@@ -1112,3 +1118,36 @@ function hideImageInfo() {
     console.log('信息弹窗已隐藏');
   }
 }
+
+function showPrevImage() {
+  if (currentImageIndex > 0) {
+    currentImageIndex--;
+    const newSrc = galleryList[currentImageIndex].src;
+    openImageModal(newSrc);
+  }
+}
+
+function showNextImage() {
+  if (currentImageIndex < galleryList.length - 1) {
+    currentImageIndex++;
+    const newSrc = galleryList[currentImageIndex].src;
+    openImageModal(newSrc);
+  }
+}
+
+// 绑定按钮点击事件
+document.addEventListener('DOMContentLoaded', () => {
+  const prevBtn = document.getElementById('prevImageBtn');
+  const nextBtn = document.getElementById('nextImageBtn');
+  if (prevBtn) prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrevImage(); });
+  if (nextBtn) nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNextImage(); });
+});
+
+// 额外：键盘方向键支持
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('imageModal').classList.contains('hidden')) {
+    if (e.key === 'ArrowLeft') showPrevImage();
+    if (e.key === 'ArrowRight') showNextImage();
+  }
+});
+
